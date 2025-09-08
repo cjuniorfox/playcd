@@ -1,9 +1,8 @@
-import subprocess
-import re
 import random
 import sys
 import logging
 import cdio, pycdio
+import sounddevice as sd
 
 logging.basicConfig(
     level=logging.INFO,
@@ -12,165 +11,146 @@ logging.basicConfig(
 
 CDINFO = {}
 
-def get_trackinfo(track):
-    info = track.split()
-    return {
-        "number" : info[0].replace('.','').strip(),
-        "length" :  int(info[1]),
-        "lengthTime" : info[2].replace('[','').replace(']',''),
-        "start" : int(info[3]),
-        "startTime" : info[4].replace('[','').replace(']','')
-    }
+def sec_to_time(sector,sector_start=0):
+    sectors_per_second=75
+    qt_sectors = sector - sector_start
+    seconds = int(qt_sectors / sectors_per_second)
+    minutes, secs = divmod(seconds, 60)
+    return minutes, secs
 
-def get_total(line):
-    info = line.split()
-    return {
-        "length" : int(info[1]),
-        "lengthTime" : info[2].replace('[','').replace(']','')
-    }
+def format_time(times):
+    minutes, secs = times
+    return f"{minutes:02}:{secs:02}"
 
 def display_time(sector):
     tracks = CDINFO["tracks"]
     count = len(tracks)
-    track = [ t for t in tracks if (t["start"] <= sector and t["length"] + t["start"] >= sector ) ]
-    number = track[0]["number"]
-    
-    seconds = int((sector - track[0]["start"]) / 75)
-    minutes, secs = divmod(seconds, 60)
-    
-    len_seconds = int(track[0]["length"]/75)
-    len_minutes, len_secs = divmod(len_seconds,60)
+    track = [ t for t in tracks if (t["start"] <= sector and t["length"] + t["start"] >= sector )] [0]
+    number = track["number"]
 
-    disc_seconds = int(sector/75) 
-    disc_minutes, disc_secs = divmod(disc_seconds, 60)
+    track_time = format_time(sec_to_time(sector,track["start"]))
+    track_total = format_time(sec_to_time(track["length"]))
+    disc_time = format_time(sec_to_time(sector))
+    disc_total = format_time(sec_to_time(CDINFO["total"]))
 
-    total_seconds = int(CDINFO["total"]["length"]/75)
-    total_minutes, total_secs = divmod(total_seconds, 60)
-
-    print(f"Total: {count:2} {disc_minutes:02}:{disc_secs:02} / {total_minutes:02}:{total_secs:02}", flush=True, file=sys.stderr)
-    print(f"Track: {number:2} {minutes:02}:{secs:02} / {len_minutes:02}:{len_secs:02}",end="",flush=True, file=sys.stderr)
-    sys.stderr.write("\033[F") 
+    print(f"Total: {count:2} {disc_time} / {disc_total}", flush=True, file=sys.stderr)
+    print(f"Track: {number:2} {track_time} / {track_total}",end="\033[F",flush=True, file=sys.stderr)
+    #\033F return the carriage by two lines
 
 def play_cd(start,length):
-    CHUNK_SIZE = 44100 * 2 * 2
+    SAMPLE_RATE = 44100
+    CHANNELS = 2
     CHUNK_SECTORS = 37 # Max of 52  
-    BYTES_PER_SECTOR = 2352 * 2
     
-    cd = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
-    drive_name = cd.get_device()
-    aplay = ['aplay', '-f', 'S16_LE', '-c2', '-r44100']
-    aplay_proc = subprocess.Popen(aplay,stdin=subprocess.PIPE,stderr=subprocess.DEVNULL)
-
     sector = start
-    try:
-        while sector < start + length:
-            sectors_to_read = min(CHUNK_SECTORS, (start + length) - sector)
-            blocks,data = cd.read_sectors(sector, pycdio.READ_MODE_AUDIO, sectors_to_read)
-            aplay_proc.stdin.write(bytes( data.encode('utf-8', errors='surrogateescape') ) )
-            aplay_proc.stdin.flush()
+    last_sector = start + length
+    with sd.RawOutputStream(
+        samplerate=SAMPLE_RATE,
+        channels=CHANNELS,
+        dtype="int16"
+    ) as stream:
+        while sector < last_sector:
+            sectors_to_read = min(CHUNK_SECTORS, last_sector - sector)
+            blocks,data = CD.read_sectors(sector, pycdio.READ_MODE_AUDIO, sectors_to_read)
+            stream.write(bytes( data.encode('utf-8', errors='surrogateescape') ) )
 
             display_time(sector)
             sector += sectors_to_read
 
-    finally:
-        aplay_proc.stdin.close()
-        aplay_proc.wait()
-        print(file=sys.stderr)
+def play_track(track, len_track, position):
+    length = CDINFO["total"] if not len_track else track["length"]
+    fromTxt = "from " if not len_track else ""
+    logging.info("Playing %strack: %s",fromTxt,track['number'])
+    start = track["start"]
+    if position != 0 :
+        # Check if the desired position is within the range
+        if track["start"] <= position <= track["start"]+track["length"]:
+            start = position
+            logging.info("Start playing from %s",format_time(sec_to_time(start)))
+        else:
+            logging.warn("Position out of the range of the track. Will play from the beginning of the track")
+    logging.debug("Track: %s, Use Track Length: %s, Start Position %s",track["number"],len_track, position)
+    play_cd(start,length)
 
-
-def play_cd3(start,length):
-    CHUNK_SIZE = 44100 * 2 * 2
-    cdread = ['cd-read', '-m', 'audio' ,'-s' ,f'{start}', '-n', f'{length}', '--no-header', '--no-hexdump']
-    aplay = ['aplay', '-f', 'S16_LE', '-c2', '-r44100']
-    cdread_proc = subprocess.Popen(cdread,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL) 
-    aplay_proc = subprocess.Popen(aplay,stdin=subprocess.PIPE,stderr=subprocess.DEVNULL)
-
-    logging.debug("CD-play from sector %s with length %s",start,length)
-    sectors = start 
-
-    buffer = b""
-    try:
-        while True:
-            chunk = cdread_proc.stdout.read(CHUNK_SIZE)
-            if not chunk:
-                break
-                        
-            aplay_proc.stdin.write(chunk)
-            aplay_proc.stdin.flush()
-            
-            display_time(sectors)
-            sectors += 75
-
-            sys.stdout.flush()
-
-    finally:
-        cdread_proc.stdout.close()
-        aplay_proc.stdin.close()
-        cdread_proc.wait()
-        aplay_proc.wait()
-        print("")
-
-def play_track(track,repeat,shuffle):
-    length = CDINFO["total"]["length"] if not shuffle and not repeat else track["length"]
-    logging.info("Playing track: %s [%s]",track['number'],track['lengthTime'])
-    logging.debug("Repeat: %s, Shuffle: %s",repeat,shuffle)
-    play_cd(track['start'],length)
-    if repeat:
-        logging.debug("Repeat track enabled. Playing again")
-        play_track(track,repeat,shuffle)
-
-def play_tracks(tracks, repeat, shuffle):
-    if shuffle:
-        for track in tracks:
-            play_track(track,False,shuffle)
+def play_playlist(playlist, repeat, shuffle, position):
+    start_pos = position
+    if shuffle or repeat == "1":
+        for track in playlist:
+            play_track(track,True,start_pos)
+            start_pos = 0 # Reset start_pos for playing the other tracks
     else:
-        #If theres no shuffle, play the entire disc from the actual track
-        play_track(tracks[0],False,False)
-    if repeat:
+        #If theres no shuffle or repeat 1, play the entire disc from the actual track and position
+        play_track(playlist[0],False, start_pos)
+        start_pos = 0 #Reset the start pos
+    if repeat in ["1","all"]: # If repeat 1, the playlist contains a single track
         logging.debug("Repeat All enabled. Playing the entire disc again.")
-        play_tracks(track,repeat,shuffle)
+        play_tracks(track,repeat,shuffle,start_pos)
 
-def prepare_tracks(tracks,shuffle,repeat,only_track):
-    tracksToPlay = tracks
+def get_track_by_sector(sector):
+    tracks = CDINFO["tracks"]
+
+    for t in tracks:
+        start = t["start"]
+        end = t["start"] + t["length"]
+        track_number = t["number"]
+        if start <= sector <= end:
+            return track_number
+    logging.warn("Track sector out of range, assuming track 1")
+    return 1
+
+def create_playlist(tracks,shuffle,repeat,only_track,track_number=1, sector = 0):
+    track_num = track_number
+    if sector > 0:
+        track_num = max(get_track_by_sector(sector),track_number)
+    filtered_tracks = [t for t in tracks if int(t["number"]) >= int(track_num)]
     if (only_track or repeat == "1"):
-        play_track(tracks[0],repeat == "1", shuffle) 
-        return
+        return [ filtered_tracks[0] ]
     if(shuffle):
         logging.debug("Shuffle enabled. Shuffling the musics before playing")
         if tracks[0]["number"] != "1":
             logging.debug("The first track is %s, playing this as first track and shuffling the rest",tracks[0]['number'])
-            otherTracks = [ t for t in tracks if t != tracks[0] ]
+            otherTracks = [ t for t in filtered_tracks if t != filtered_tracks[0] ]
             random.shuffle(otherTracks)
-            tracksToPlay = [tracks[0]] + otherTracks
+            return [filtered_tracks[0]] + otherTracks
         else:
-            random.shuffle(tracks)
-            tracksToPlay = tracks
-    play_tracks(tracksToPlay, repeat == "all", shuffle )
+            random.shuffle(filtered_tracks)
+            return filtered_tracks
+    return filtered_tracks
 
-def retrieve_cdinfo():
-    try:
-        logging.debug("Retrieving information from the CD using 'cdparanoia'")
-        cdinfo = subprocess.check_output(['cdparanoia', '-Q'], stderr=subprocess.STDOUT).decode().split('\n')
-        tracks = [get_trackinfo(track) for track in cdinfo if re.match(r'^\d', track.lstrip())]
-        total = [get_total(line) for line in cdinfo if line.startswith("TOTAL")][0]
-        logging.debug("Retrieved information from the CD using 'cdparanoia'. Number of tracks %s",len(tracks))
-        global CDINFO
-        CDINFO = { "tracks" : tracks, "total" : total }
-    except Exception as e:
-        logging.exception('Error retrieving data from cdparanoia: %s',str(e))
-        raise(e)
 
-def main(track_number, log_level, shuffle, repeat, only_track):
+def cdinfo():
+    track_num = 1
+    tracks = []
+    num_tracks = CD.get_num_tracks()
+    while track_num <= num_tracks:
+        track = CD.get_track(track_num)
+        tracks.append( {
+            "format" : track.get_format(),
+            "number" : track.track,
+            "length" : track.get_last_lsn() - track.get_lsn(),
+            "start" : track.get_lsn()
+        } )
+        track_num += 1
+    total = CD.get_disc_last_lsn()
+    global CDINFO
+    CDINFO = {"tracks": tracks, "total": total}
+    return CDINFO
+
+def load_cd_driver():
+    global CD
+    CD = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
+    CD.open()
+
+def main(log_level, shuffle, repeat, only_track, track_number = 1, start_second=0, start_sector=0):
     logging.getLogger().setLevel(log_level)
-    logging.debug("Parameters: Track:%s, Log level: %s, Shuffle: %s, Repeat: %s, Only Track: %s",track_number, log_level, shuffle, repeat, only_track)
-    retrieve_cdinfo()
-    logging.info("This CD has %s tracks with the full length of %s",len(CDINFO["tracks"]),CDINFO["total"]["lengthTime"])
-    startTrack = track_number or "1"
-    tracks = [t for t in CDINFO["tracks"] if int(t["number"]) >= int(startTrack)]
-    if(only_track): 
-        logging.debug("Only track selected. Play a single track and exit")
-        #Shuffle is true for a single track just to flag play only the track length
-        play_track(tracks[0],repeat == "1", True)
-        return
-    prepare_tracks(tracks,shuffle,repeat,only_track)
-    return
+    logging.debug("Parameters: Track:%s, Log level: %s, Shuffle: %s, Repeat: %s, Only Track: %s, Start Second: %s, Start sector: %s",track_number, log_level, shuffle, repeat, only_track, start_second, start_sector)
+    if start_second > 0:
+        position = start_second * 75
+    else:
+        position = start_sector
+    load_cd_driver()
+    cdinfo()
+    logging.info("This CD has %s tracks",len(CDINFO["tracks"]))
+    playlist = create_playlist(CDINFO["tracks"],shuffle,repeat,only_track, track_number,position)
+    play_playlist(playlist, repeat, shuffle, position)
+    CD.close()
