@@ -1,0 +1,1 @@
+from .playcd import main

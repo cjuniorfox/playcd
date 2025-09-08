@@ -1,0 +1,19 @@
+[project]
+name = "playcd"
+version = "0.1.0"
+description = "Play CDs from command line and/or library"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "GNU General Public License v3.0 (GPLv3)"}
+authors = [{ name = "Carlos Junior", email = "cjuniorfox@gmail.com" }]
+keywords = ["cd", "cdda", "redbook", "cd-audio", "audio-cd"]
+
+[project.urls]
+Homepage = "https://github.com/cjuniorfox/playcd"
+
+[project.scripts]
+playcd = "playcd.cli:main"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
