@@ -6,7 +6,7 @@ def main():
     parser = argparse.ArgumentParser(description="Play CD using cd-read, aplay and pv")
     parser.add_argument(
         "-l","--log-level",
-        default="INFO",
+        default="WARNING",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Set the logging level (default: INFO)"
     )
