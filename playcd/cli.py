@@ -1,7 +1,7 @@
 import argparse
-from playcd.playcd import main as playcd
+from playcd.core import main
 
-def main():
+def main_cli():
     parser = argparse.ArgumentParser(description="Play CD using cd-read, aplay and pv")
     parser.add_argument(
         "-l","--log-level",
@@ -17,7 +17,7 @@ def main():
     parser.add_argument("track", nargs="?", default="1", help="The start track to play (e.g. 5)")
     args = parser.parse_args()
 
-    playcd(
+    main(
         log_level=args.log_level,
         shuffle=args.shuffle,
         repeat=args.repeat,

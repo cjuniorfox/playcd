@@ -10,13 +10,16 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [
-    { name = "Carlos Anselmo Mendes Junior", email = "youremail@example.com" }
+    { name = "Carlos Anselmo Mendes Junior", email = "cjuniorfox@gmail.com" }
 ]
 
 dependencies = [
-    "pycdio>=2.1.1",
+    "pycdio>=2.1.2.dev0",
     "sounddevice>=0.4.8",
 ]
+
+[project.scripts]
+playcd = "playcd.cli:main_cli"
 
 [project.urls]
 homepage = "https://github.com/cjuniorfox/playcd"
