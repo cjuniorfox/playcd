@@ -25,12 +25,12 @@ class KeyboardListener:
     def _getch(self):
         """Reads a single character from stdin without echoing it to the screen."""
         fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
+        self.old_settings = termios.tcgetattr(fd)
         try:
             tty.setraw(sys.stdin.fileno())
             ch = sys.stdin.read(1)
         finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            termios.tcsetattr(fd, termios.TCSADRAIN, self.old_settings)
         return ch
     
     def _get_command_from_key(self):
@@ -46,10 +46,8 @@ class KeyboardListener:
             return "stop"
         elif key == 'w':
             return "play"
-        elif key == 'c':
-            quit()
-        else:
-            return None
+        elif ord(key) == 3:
+            return "quit"
 
     def start(self):
         """Start the keyboard listener thread"""
@@ -71,4 +69,4 @@ class KeyboardListener:
         if self.is_running:
             self.is_running = False
             self.listener_thread.join(timeout=2)
-
+            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.old_settings)

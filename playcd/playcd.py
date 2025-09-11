@@ -15,6 +15,13 @@ logging.basicConfig(
 
 CDINFO = {}
 
+PREV="\uf049"
+STOP="\uf04d"
+PLAY="\uf04b"
+NEXT="\uf050"
+PAUSE="\uf04c"
+DISC="\uede9"
+
 def sec_to_time(sector,sector_start=0):
     sectors_per_second=75
     qt_sectors = sector - sector_start
@@ -26,7 +33,7 @@ def format_time(times):
     minutes, secs = times
     return f"{minutes:02}:{secs:02}"
 
-def display_time(sector):
+def display(sector,icon=f"{PLAY}"):
     tracks = CDINFO["tracks"]
     count = len(tracks)
     track = [ t for t in tracks if (t["start"] <= sector and t["length"] + t["start"] >= sector )] [0]
@@ -37,22 +44,24 @@ def display_time(sector):
     disc_time = format_time(sec_to_time(sector))
     disc_total = format_time(sec_to_time(CDINFO["total"]))
 
-    print(f"\rTotal: {count:2} {disc_time} / {disc_total}", flush=True, file=sys.stderr)
-    print(f"\rTrack: {number:2} {track_time} / {track_total}",end="\033[F",flush=True, file=sys.stderr)
-    #\033F return the carriage by two lines
+    print(f"\r {DISC} {count:2} {disc_time} / {disc_total}", flush=True, file=sys.stderr)
+    print(f"\r {icon} {number:2} {track_time} / {track_total}",end="\033[F",flush=True, file=sys.stderr)
+    #\033F return the carriage to the beginning of the previous line
 
-def get_command():
+def get_command(sector=0):
     command = get_command_from_listener()
     if not command:
         command = get_command_from_keyboard()
     return command
 
-def process_command():
+def process_command(sector=0):
     command = get_command()
     if command:
         if(command in ["pause","stop"]):
             logging.info(f"{command} issued.")
             is_stop = command == "stop"
+            icon=f"{STOP}" if is_stop else f"{PAUSE}"
+            display(0 if is_stop else sector, icon)
             while True:
                 time.sleep(0.5)
                 command = get_command()
@@ -65,7 +74,10 @@ def process_command():
 
         if(command in ["next","prev"]):
             logging.info(f"{command} track issued")
+            display(sector,f"{NEXT}" if command == "next" else f"{PREV}")
             return command
+        if(command == "quit"):
+            raise KeyboardInterrupt
 
 def play_cd(start,length):
     SAMPLE_RATE = 44100
@@ -83,9 +95,9 @@ def play_cd(start,length):
             sectors_to_read = min(CHUNK_SECTORS, last_sector - sector)
             blocks,data = CD.read_sectors(sector, pycdio.READ_MODE_AUDIO, sectors_to_read)
             stream.write(bytes( data.encode('utf-8', errors='surrogateescape') ) )
-            display_time(sector)
+            display(sector)
             '''Process command interface'''
-            command = process_command()
+            command = process_command(sector)
             if command:
                 if command in ["next","restart"]:
                     return command
@@ -117,11 +129,11 @@ def play_playlist(playlist, repeat, shuffle, position):
     start_pos = position
     i = 0
     while i < len(playlist):
-        command = play_track(playlist[i],(shuffle or repeat == "1"), start_pos)
+        command = play_track(playlist[i],True, start_pos)
         '''If command is next, just play the next track. No further validation required'''
         if not command and not shuffle:
             '''If no command was issued, just leave the loop, as the disc was played entirely'''
-            break
+            #break - Testing the playback as list
         if command == "prev":
             i=max(i-1,0)
         elif command == "restart":
@@ -209,8 +221,7 @@ def get_command_from_keyboard():
 
 def print_instructions():
     print("PlayCD player\n")
-    print("Keyboard Commands:\n [W]  [S]  [A]  [D]  [Space]\n  \uf049    \uf04d    \uf04b    \uf050      \uf04c\n")
-    print("To stop keyboard listener, press [C], and them [Ctrl+C] to stop the application.\n")
+    print(f"Keyboard Commands:\n [A]  [S]  [W]  [D]  [Space]\n  {PREV}    {STOP}    {PLAY}    {NEXT}      {PAUSE}\n")
     print("You can also send the commands to a pipe by writing to '/tmp/playcd'\nAccepted commands:\n[prev] [next] [play] [pause] [stop]\n")
 
 def main(log_level, shuffle, repeat, only_track, track_number = 1, start_second=0, start_sector=0):
