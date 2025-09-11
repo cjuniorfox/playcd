@@ -1,5 +1,4 @@
 import argparse
-import json
 from playcd.playcd import main as playcd
 
 def main():

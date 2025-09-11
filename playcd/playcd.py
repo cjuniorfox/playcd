@@ -1,9 +1,8 @@
 import random
-import sys, os
+import sys
 import logging
 import cdio, pycdio
 import sounddevice as sd
-import threading
 import time
 from playcd.pipe_listener import PipeListener
 from playcd.keyboard_listener import KeyboardListener

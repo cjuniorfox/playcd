@@ -1,19 +1,23 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "playcd"
 version = "0.1.0"
-description = "Play CDs from command line and/or library"
+description = "Python CD audio player with keyboard and FIFO command interface"
 readme = "README.md"
-requires-python = ">=3.7"
-license = {text = "GNU General Public License v3.0 (GPLv3)"}
-authors = [{ name = "Carlos Junior", email = "cjuniorfox@gmail.com" }]
-keywords = ["cd", "cdda", "redbook", "cd-audio", "audio-cd"]
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Carlos Anselmo Mendes Junior", email = "youremail@example.com" }
+]
+
+dependencies = [
+    "pycdio>=2.1.1",
+    "sounddevice>=0.4.8",
+]
 
 [project.urls]
-Homepage = "https://github.com/cjuniorfox/playcd"
-
-[project.scripts]
-playcd = "playcd.cli:main"
-
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+homepage = "https://github.com/cjuniorfox/playcd"
+repository = "https://github.com/cjuniorfox/playcd"
