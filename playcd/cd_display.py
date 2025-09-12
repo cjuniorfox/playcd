@@ -51,6 +51,19 @@ class CDDisplay:
         disc_total = self._format_time(self._sec_to_time(self.cdinfo["total"]))
         
         lines = []
+        self._display = {
+                            "disc": {
+                                "operaton": CDIcons.DISC.name.lower(),
+                                "icon": CDIcons.DISC,
+                                "time": { "current": disc_time, "total": disc_total }
+                            },
+                            "track": {
+                                "operation" : icon.name.lower(),
+                                "icon" : icon,
+                                "track" : number,
+                                "time" : { "current" : track_time, "total" : track_total }
+                            }
+                        }
     
         lines.append(f"{CDIcons.DISC} {count:2} {disc_time} / {disc_total}")
         lines.append(f"{icon} {number:2} {track_time} / {track_total}")
@@ -67,6 +80,9 @@ class CDDisplay:
         self.create_display(sector, icon)
         self._assemble_display_string()
         self.print_display()
+
+    def get_display(self):
+        return self._display
     
     def display_lines(self, sector: int, icon = CDIcons.PLAY) -> List[str]:
         self.create_display(sector,icon)

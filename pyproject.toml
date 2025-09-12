@@ -16,6 +16,8 @@ authors = [
 dependencies = [
     "pycdio>=2.1.2.dev0",
     "sounddevice>=0.4.8",
+    "fastapi>=0.115.3",
+    "uvicorn[standard]>=0.32.0"
 ]
 
 [project.scripts]

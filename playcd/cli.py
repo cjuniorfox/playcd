@@ -5,9 +5,9 @@ def main_cli():
     parser = argparse.ArgumentParser(description="Play CD using cd-read, aplay and pv")
     parser.add_argument(
         "-l","--log-level",
-        default="WARNING",
+        default="ERROR",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="Set the logging level (default: INFO)"
+        help="Set the logging level (default: ERROR)"
     )
     parser.add_argument("-s","--shuffle",action="store_true",help="shuffle tracks")
     parser.add_argument("-r","--repeat",default="off",choices=["off","1","all"], help="Repeat. 1=Actual track, all=whole disc. Default off")

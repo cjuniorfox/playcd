@@ -11,17 +11,21 @@ class KeyboardListener:
         self.command_queue = queue.Queue()
         self.is_running = False
         self.old_settings = None
+
+        keys = ["q","a","d","e"," ","s","w"]
+        commands = ["rew","prev","next","ff","pause","stop","play"]
+        self._key_commands = dict(zip(keys,commands))
+
     def _listener_thread_func(self):
         """Core listener"""
         self.logging.info("Keyboard listener started")
-
         try:
             while self.is_running:
                 command = self._get_command_from_key()
                 if command:
                     self.command_queue.queue.clear()
                     self.command_queue.put(command)
-                time.sleep(0.1)
+                time.sleep(0.2)
         except KeyboardInterrupt:
             this.stop()
 
@@ -42,25 +46,19 @@ class KeyboardListener:
             termios.tcsetattr(fd, termios.TCSADRAIN, self.old_settings)
         return ch
     
-    def _get_command_from_key(self):
+    def _get_command_from_key(self) -> str:
         key = self._getch()
-        self.logging.debug("%s pressed",key)
-        if key == 'q':
-            return "rewind"
-        elif key == 'a':
-            return "prev"
-        elif key == 'd':
-            return "next"
-        elif key == "e":
-            return "fast forward"
-        elif key == ' ':
-            return "pause"
-        elif key == 's':
-            return "stop"
-        elif key == 'w':
-            return "play"
-        elif ord(key) == 3:
-            return "quit"
+        try:
+            if ord(key) == 3:
+                return "quit"
+            command = self._key_commands[key]
+            self.logging.debug("KeyboardListener: key % pressed for command: %s.", key, command)
+            return command
+        except KeyError:
+            self.logging.warn("Unable to parse a command for the key %s",key)
+
+    def get_key_commands() -> dict[str,str]:
+        return this._key_commands
 
     def start(self):
         """Start the keyboard listener thread"""

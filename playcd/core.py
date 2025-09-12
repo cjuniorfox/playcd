@@ -5,7 +5,7 @@ import logging
 import cdio, pycdio
 import sounddevice as sd
 import time
-from playcd.pipe_listener import PipeListener
+from playcd.api_listener import APIListener
 from playcd.keyboard_listener import KeyboardListener
 from playcd.cd_display import CDDisplay, CDIcons
 from playcd.cd_player import CDPlayer
@@ -24,12 +24,15 @@ PIPE_LISTENER=None
 def display(sector, icon = CDIcons.PLAY):
     if VALID_TTY:
         CD_DISPLAY.display(sector,icon)
+    else:
+        CD_DISPLAY.create_display(sector,icon)
+    API_LISTENER.set_display(CD_DISPLAY.get_display())
 
-def get_command_from_pipe():
+def get_command_from_api():
     try:
-        return PIPE_LISTENER.get_command()
+        return API_LISTENER.get_command()
     except Exception as e:
-        logging.error("Error getting the listener command %s.",e)
+        logging.error("Error getting the API commmand %s", e)
 
 def get_command_from_keyboard():
     if KEYBOARD_LISTENER == None:
@@ -40,7 +43,7 @@ def get_command_from_keyboard():
         logging.error("Error getting the keyboard comand %s",e)
 
 def get_command(sector=0):
-    command = get_command_from_pipe()
+    command = get_command_from_api()
     if not command:
         command = get_command_from_keyboard()
     return command
@@ -57,10 +60,10 @@ def process_command(lsn,cd_player):
             cd_player.stop()
         elif command == "play":
             cd_player.play()
-        elif command == "fast forward":
+        elif command == "ff":
             display(lsn,CDIcons.FF)
             cd_player.fast_forward()
-        elif command == "rewind":
+        elif command == "rew":
             display(lsn,CDIcons.REW)
             cd_player.rewind()
         elif command == "next":
@@ -193,13 +196,11 @@ def start_keyboard_listener():
     KEYBOARD_LISTENER = KeyboardListener(logging)
     KEYBOARD_LISTENER.start()
 
-def start_pipe_listener():
-    pipe_name = "/tmp/playcd"
-    logging.info("Control the CD by writing commands to the pipe '%s'. Accepted commands: [prev] [next] [play] [pause] [stop].",pipe_name)
-    global PIPE_LISTENER
-    PIPE_LISTENER = PipeListener(pipe_name,logging)
-    PIPE_LISTENER.start()
-    
+def start_api_listener(host, port):
+        logging.info("Starting the API server for host %s on port %s", host, port)
+        global API_LISTENER
+        API_LISTENER = APIListener(host,port,logging)
+        API_LISTENER.start()
 
 def main(log_level, shuffle, repeat, only_track, track_number = 1): 
     try:
@@ -211,7 +212,7 @@ def main(log_level, shuffle, repeat, only_track, track_number = 1):
         enable_cd_display()
         logging.info("This CD has %s tracks.",len(CDINFO["tracks"]))
         playlist = create_playlist(CDINFO["tracks"],shuffle,repeat,only_track, track_number)
-        start_pipe_listener()
+        start_api_listener("::",8001)
         is_tty_valid()
         start_keyboard_listener()
         play_playlist(playlist, repeat, shuffle)
