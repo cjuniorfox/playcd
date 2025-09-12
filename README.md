@@ -83,28 +83,58 @@ sudo dnf install libcdio-devel portaudio-devel
 
 Run `playcd` in a terminal and control playback with keys:
 
-| Key      | Action   |
-| -------- | -------- |
-| `w`      | Play     |
-| `s`      | Stop     |
-| `space`  | Pause    |
-| `a`      | Previous |
-| `d`      | Next     |
-| `Ctrl+C` | Quit     |
+| Key      | Action      |
+| -------- | ------------|
+| `w`      | Play        |
+| `s`      | Stop        |
+| `space`  | Pause       |
+| `a`      | Previous    |
+| `d`      | Next        |
+| `q`      | Rewind      |
+| `e`      | Fast Forward|
+| `Ctrl+C` | Quit        |
 
 ---
 
-### Pipe mode
+### 📡 API Mode
 
-`playcd` listens to a named pipe (FIFO).
-By default, it creates `/tmp/playcd.fifo`.
+`playcd` listen commands over a Rest API on port `8001`.
 
-Send commands like this:
+Requests:
 
-```bash
-echo "play" > /tmp/playcd.fifo
-echo "pause" > /tmp/playcd.fifo
-echo "next" > /tmp/playcd.fifo
+| URI                   | Command      |
+|-----------------------|--------------|
+|`POST /commands/play`  | Play         |
+|`POST /commands/stop`  | Stop         |
+|`POST /commands/pause` | Pause        |
+|`POST /commands/prev`  | Previous     |
+|`POST /commands/next`  | Next         |
+|`POST /commands/rew`   | Rewind       |
+|`POST /commands/ff`    | Fast Forward |
+
+Display Information:
+
+Information about the current disc, track, and playback state can be retrieved at:
+
+#### GET /display
+
+```json
+{
+  "status" : "ok",
+  "display" : {
+    "disc": {
+        "operaton": "disc",
+        "icon": "",
+        "time": { "current": "01:00", "total": "55:00" }
+    },
+    "track": {
+       "operation" : "play",
+       "icon" : "",
+       "track" : 1,
+       "time" : { "current" : "01:00", "total" : "04:30" }
+    }
+  }
+}
 ```
 
 You can integrate this into scripts or other applications.
@@ -135,29 +165,6 @@ while True:
             listener.stop()
             break
 ```
-
-### Pipe listener
-
-```python
-import logging
-from playcd.pipe_listener import PipeListener
-
-logging.basicConfig(level=logging.INFO)
-pipe = PipeListener("/tmp/playcd.fifo", logging)
-
-pipe.start()
-
-print("Listening on /tmp/playcd.fifo...")
-while True:
-    cmd = pipe.get_command()
-    if cmd:
-        print("Received command:", cmd)
-        if cmd == "quit":
-            pipe.stop()
-            break
-```
-
----
 
 ## 🛠 Development
 
