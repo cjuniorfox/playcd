@@ -178,11 +178,6 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### REST API (planned)
-
-A REST API listener is planned, allowing remote control of `playcd` via HTTP requests.  
-This will make it possible to control the CD player from a mobile phone or another machine.
-
 ---
 
 ## 🧾 License
