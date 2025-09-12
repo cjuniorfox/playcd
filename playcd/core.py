@@ -131,11 +131,8 @@ def get_track_by_lsn(sector):
     logging.warn("Track sector out of range, assuming track 1")
     return 1
 
-def create_playlist(tracks,shuffle,repeat,only_track,track_number=1, sector = 0):
-    track_num = track_number
-    if sector > 0:
-        track_num = max(get_track_by_lsn(sector),track_number)
-    filtered_tracks = [t for t in tracks if int(t["number"]) >= int(track_num)]
+def create_playlist(tracks,shuffle,repeat,only_track,track_number=1):
+    filtered_tracks = [t for t in tracks if int(t["number"]) >= int(track_number)]
     if (only_track or repeat == "1"):
         return [ filtered_tracks[0] ]
     if(shuffle):
@@ -204,20 +201,16 @@ def start_pipe_listener():
     PIPE_LISTENER.start()
     
 
-def main(log_level, shuffle, repeat, only_track, track_number = 1, start_second=0, start_sector=0): 
+def main(log_level, shuffle, repeat, only_track, track_number = 1): 
     try:
         print("PlayCD Player\n")
         logging.getLogger().setLevel(log_level)
-        logging.debug("Parameters: Track:%s, Log level: %s, Shuffle: %s, Repeat: %s, Only Track: %s, Start Second: %s, Start sector: %s",track_number, log_level, shuffle, repeat, only_track, start_second, start_sector)
-        if start_second > 0:
-            position = start_second * 75
-        else:
-            position = start_sector
+        logging.debug("Parameters: Track:%s, Log level: %s, Shuffle: %s, Repeat: %s, Only Track: %s",track_number, log_level, shuffle, repeat, only_track)
         load_cd_driver()
         cdinfo()
         enable_cd_display()
         logging.info("This CD has %s tracks.",len(CDINFO["tracks"]))
-        playlist = create_playlist(CDINFO["tracks"],shuffle,repeat,only_track, track_number,position)
+        playlist = create_playlist(CDINFO["tracks"],shuffle,repeat,only_track, track_number)
         start_pipe_listener()
         is_tty_valid()
         start_keyboard_listener()
