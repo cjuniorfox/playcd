@@ -14,6 +14,7 @@ class PipeListener:
         """The core logic that runs in the separate thread."""
         if not os.path.exists(self.pipe_name):
             os.mkfifo(self.pipe_name)
+            os.chmod(self.pipe_name, 0o660)
         
         self.logging.info("Listener thread started for pipe %s.",self.pipe_name)
 

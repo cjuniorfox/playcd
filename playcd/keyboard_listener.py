@@ -10,14 +10,17 @@ class KeyboardListener:
         self.logging = logging
         self.command_queue = queue.Queue()
         self.is_running = False
-
+        self.old_settings = None
     def _listener_thread_func(self):
         """Core listener"""
         self.logging.info("Keyboard listener started")
 
         try:
             while self.is_running:
-                self.command_queue.put(self._get_command_from_key()) 
+                command = self._get_command_from_key()
+                if command:
+                    self.command_queue.queue.clear()
+                    self.command_queue.put(command)
                 time.sleep(0.1)
         except KeyboardInterrupt:
             this.stop()
@@ -25,7 +28,13 @@ class KeyboardListener:
     def _getch(self):
         """Reads a single character from stdin without echoing it to the screen."""
         fd = sys.stdin.fileno()
-        self.old_settings = termios.tcgetattr(fd)
+        try:
+            self.old_settings = termios.tcgetattr(fd)
+        except termios.error as e:
+            self.logging.debug("Exception throw trying to enable keyboard input %s",e)
+            self.logging.warn("Keyboard input not available in this environment")
+            quit()
+
         try:
             tty.setraw(sys.stdin.fileno())
             ch = sys.stdin.read(1)
@@ -36,10 +45,14 @@ class KeyboardListener:
     def _get_command_from_key(self):
         key = self._getch()
         self.logging.debug("%s pressed",key)
-        if key == 'a':
+        if key == 'q':
+            return "rewind"
+        elif key == 'a':
             return "prev"
         elif key == 'd':
             return "next"
+        elif key == "e":
+            return "fast forward"
         elif key == ' ':
             return "pause"
         elif key == 's':
@@ -69,4 +82,5 @@ class KeyboardListener:
         if self.is_running:
             self.is_running = False
             self.listener_thread.join(timeout=2)
-            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.old_settings)
+            if self.old_settings != None:
+                termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.old_settings)

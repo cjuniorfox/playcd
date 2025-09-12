@@ -1,11 +1,14 @@
 import random
 import sys
+import os
 import logging
 import cdio, pycdio
 import sounddevice as sd
 import time
 from playcd.pipe_listener import PipeListener
 from playcd.keyboard_listener import KeyboardListener
+from playcd.cd_display import CDDisplay, CDIcons
+from playcd.cd_player import CDPlayer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,138 +16,110 @@ logging.basicConfig(
 )
 
 CDINFO = {}
+VALID_TTY = False
 
-PREV="\uf049"
-STOP="\uf04d"
-PLAY="\uf04b"
-NEXT="\uf050"
-PAUSE="\uf04c"
-DISC="\uede9"
+KEYBOARD_LISTENER=None
+PIPE_LISTENER=None
 
-def sec_to_time(sector,sector_start=0):
-    sectors_per_second=75
-    qt_sectors = sector - sector_start
-    seconds = int(qt_sectors / sectors_per_second)
-    minutes, secs = divmod(seconds, 60)
-    return minutes, secs
+def display(sector, icon = CDIcons.PLAY):
+    if VALID_TTY:
+        CD_DISPLAY.display(sector,icon)
 
-def format_time(times):
-    minutes, secs = times
-    return f"{minutes:02}:{secs:02}"
+def get_command_from_pipe():
+    try:
+        return PIPE_LISTENER.get_command()
+    except Exception as e:
+        logging.error("Error getting the listener command %s.",e)
 
-def display(sector,icon=f"{PLAY}"):
-    tracks = CDINFO["tracks"]
-    count = len(tracks)
-    track = [ t for t in tracks if (t["start"] <= sector and t["length"] + t["start"] >= sector )] [0]
-    number = track["number"]
-
-    track_time = format_time(sec_to_time(sector,track["start"]))
-    track_total = format_time(sec_to_time(track["length"]))
-    disc_time = format_time(sec_to_time(sector))
-    disc_total = format_time(sec_to_time(CDINFO["total"]))
-
-    print(f"\r {DISC} {count:2} {disc_time} / {disc_total}", flush=True, file=sys.stderr)
-    print(f"\r {icon} {number:2} {track_time} / {track_total}",end="\033[F",flush=True, file=sys.stderr)
-    #\033F return the carriage to the beginning of the previous line
+def get_command_from_keyboard():
+    if KEYBOARD_LISTENER == None:
+        return None
+    try:
+        return KEYBOARD_LISTENER.get_command()
+    except Exception as e:
+        logging.error("Error getting the keyboard comand %s",e)
 
 def get_command(sector=0):
-    command = get_command_from_listener()
+    command = get_command_from_pipe()
     if not command:
         command = get_command_from_keyboard()
     return command
 
-def process_command(sector=0):
+def process_command(lsn,cd_player):
     command = get_command()
     if command:
-        if(command in ["pause","stop"]):
-            logging.info(f"{command} issued.")
-            is_stop = command == "stop"
-            icon=f"{STOP}" if is_stop else f"{PAUSE}"
-            display(0 if is_stop else sector, icon)
-            while True:
-                time.sleep(0.5)
-                command = get_command()
-                if command and command in ["pause", "play"]:
-                   logging.info("Resume issued.")
-                   if is_stop:
-                       '''Restart from the begining of the playlist'''
-                       return "restart"
-                   break
-
-        if(command in ["next","prev"]):
-            logging.info(f"{command} track issued")
-            display(sector,f"{NEXT}" if command == "next" else f"{PREV}")
-            return command
-        if(command == "quit"):
+        logging.info("%s issued",command)
+        if command == "pause":
+            display(lsn,CDIcons.PAUSE)
+            cd_player.pause()
+        elif command == "stop":
+            display(lsn,CDIcons.STOP)
+            cd_player.stop()
+        elif command == "play":
+            cd_player.play()
+        elif command == "fast forward":
+            display(lsn,CDIcons.FF)
+            cd_player.fast_forward()
+        elif command == "rewind":
+            display(lsn,CDIcons.REW)
+            cd_player.rewind()
+        elif command == "next":
+            display(lsn,CDIcons.NEXT)
+        elif command == "prev":
+            display(lsn,CDIcons.PREV)
+        elif command == "quit":
+            cd_player.close()
             raise KeyboardInterrupt
+        return command
 
-def play_cd(start,length):
-    SAMPLE_RATE = 44100
-    CHANNELS = 2
-    CHUNK_SECTORS = 37 # Max of 52  
-    
-    sector = start
-    last_sector = start + length
-    with sd.RawOutputStream(
-        samplerate=SAMPLE_RATE,
-        channels=CHANNELS,
-        dtype="int16"
-    ) as stream:
-        while sector < last_sector:
-            sectors_to_read = min(CHUNK_SECTORS, last_sector - sector)
-            blocks,data = CD.read_sectors(sector, pycdio.READ_MODE_AUDIO, sectors_to_read)
-            stream.write(bytes( data.encode('utf-8', errors='surrogateescape') ) )
-            display(sector)
-            '''Process command interface'''
-            command = process_command(sector)
-            if command:
-                if command in ["next","restart"]:
+def get_icon_from_cd_player(cd_player):
+    if cd_player.is_stop():
+        return CDIcons.STOP
+    elif cd_player.is_pause():
+        return CDIcons.PAUSE
+    elif cd_player.is_playing():
+        return CDIcons.PLAY
+
+def play_cd(playlist, position, single_track = False):
+    start = playlist[position]["start"]
+    length = playlist[position]["length"] if single_track else CDINFO["total"]
+    cd_player = CDPlayer(CD, logging)
+    cd_player.start(start,length)
+    while cd_player.is_playing():
+        lsn = cd_player.get_lsn()
+        command = process_command(lsn,cd_player)
+        if command:
+            if command in ["next","prev"]:
+                if single_track:
+                    cd_player.close()
                     return command
-                '''If at the beginning of the track, play the previous track. If not, play the beggining of the track'''
-                if command == "prev":
-                    if (sector - start) > 150:
-                        sector = start
-                    else:
-                        return command
-            else:
-                sector += sectors_to_read
+                i = 0
+                while i < len(playlist):
+                    if playlist[i]["number"] == get_track_by_lsn(lsn) and i < len(playlist) - 1:
+                        int_track = min(i+1,len(playlist)-1) if command == "next" else max(i-1,0)
+                        if command == "prev" and lsn - playlist[i]["start"] > 150:
+                            int_track = i
+                        cd_player.jump(playlist[int_track]["start"])
+                    i+=1
+        icon = get_icon_from_cd_player(cd_player)
+        time.sleep(0.5)
+        display(lsn,icon)
 
-def play_track(track, len_track, position):
-    length = CDINFO["total"] if not len_track else track["length"]
-    fromTxt = "from " if not len_track else ""
-    logging.info("Playing %strack: %s",fromTxt,track['number'])
-    start = track["start"]
-    if position != 0 :
-        # Check if the desired position is within the range
-        if track["start"] <= position <= track["start"]+track["length"]:
-            start = position
-            logging.info("Start playing from %s",format_time(sec_to_time(start)))
-        else:
-            logging.warn("Position out of the range of the track. Will play from the beginning of the track")
-    logging.debug("Track: %s, Use Track Length: %s, Start Position %s",track["number"],len_track, position)
-    return play_cd(start,length)
-
-def play_playlist(playlist, repeat, shuffle, position):
-    start_pos = position
+def play_playlist(playlist, repeat, shuffle):
     i = 0
-    while i < len(playlist):
-        command = play_track(playlist[i],True, start_pos)
-        '''If command is next, just play the next track. No further validation required'''
-        if not command and not shuffle:
-            '''If no command was issued, just leave the loop, as the disc was played entirely'''
-            #break - Testing the playback as list
-        if command == "prev":
-            i=max(i-1,0)
-        elif command == "restart":
-            i=0
-        else:
-            i=i+1
-    start_pos = 0 #Reset the start pos
+    single_track = (repeat == "1" or shuffle)
+    if not shuffle:
+        play_cd(playlist, 0, single_track)
+    else:
+        while i < len(playlist):
+            command = play_cd(playlist,i,True)
+            i = max(i-1,0) if command == "prev" else min(i+1,len(playlist)-1)
+    
     if repeat in ["1","all"]: # If repeat 1, the playlist contains a single track
         logging.debug("Repeat All enabled. Playing the entire disc again.")
-        play_tracks(track,repeat,shuffle,start_pos)
+        play_playlist(playlist,repeat,shuffle)
 
-def get_track_by_sector(sector):
+def get_track_by_lsn(sector):
     tracks = CDINFO["tracks"]
 
     for t in tracks:
@@ -159,7 +134,7 @@ def get_track_by_sector(sector):
 def create_playlist(tracks,shuffle,repeat,only_track,track_number=1, sector = 0):
     track_num = track_number
     if sector > 0:
-        track_num = max(get_track_by_sector(sector),track_number)
+        track_num = max(get_track_by_lsn(sector),track_number)
     filtered_tracks = [t for t in tracks if int(t["number"]) >= int(track_num)]
     if (only_track or repeat == "1"):
         return [ filtered_tracks[0] ]
@@ -198,33 +173,40 @@ def load_cd_driver():
     CD = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
     CD.open()
 
-def start_listener():
-    global LISTENER
-    global KEYBOARD
-    LISTENER = PipeListener("/tmp/playcd",logging)
-    LISTENER.start()
-    KEYBOARD = KeyboardListener(logging)
-    KEYBOARD.start()
+def enable_cd_display():
+    global CD_DISPLAY
+    CD_DISPLAY = CDDisplay(CDINFO)
 
-def get_command_from_listener():
+def is_tty_valid():
+    global VALID_TTY
+    VALID_TTY = os.isatty(sys.stdout.fileno())
+    return VALID_TTY
+
+def start_keyboard_listener():
+    if not VALID_TTY:
+        logging.warn("stdout is redirected or invalid. Keyboard listener not enable on this environment")
+        return
+    keys=["[Q","A","S","W","D","E","Space]"]
+    icons=[f"{CDIcons.REW}", f"{CDIcons.PREV}", f"{CDIcons.STOP}", f"{CDIcons.PLAY}", f"{CDIcons.NEXT}", f"{CDIcons.FF}", f"  {CDIcons.PAUSE}"]
+    
+    print("Keyboard Commands:")
+    print("","]  [".join(keys),)
+    print(" ","    ".join(icons),"\n")
+    global KEYBOARD_LISTENER
+    KEYBOARD_LISTENER = KeyboardListener(logging)
+    KEYBOARD_LISTENER.start()
+
+def start_pipe_listener():
+    pipe_name = "/tmp/playcd"
+    logging.info("Control the CD by writing commands to the pipe '%s'. Accepted commands: [prev] [next] [play] [pause] [stop].",pipe_name)
+    global PIPE_LISTENER
+    PIPE_LISTENER = PipeListener(pipe_name,logging)
+    PIPE_LISTENER.start()
+    
+
+def main(log_level, shuffle, repeat, only_track, track_number = 1, start_second=0, start_sector=0): 
     try:
-        return LISTENER.get_command()
-    except Exception as e:
-        logging.error("Error getting the listener command %s.",e)
-
-def get_command_from_keyboard():
-    try:
-        return KEYBOARD.get_command()
-    except Exception as e:
-        logging.error("Error getting the keyboard comand %s",e)
-
-def print_instructions():
-    print("PlayCD player\n")
-    print(f"Keyboard Commands:\n [A]  [S]  [W]  [D]  [Space]\n  {PREV}    {STOP}    {PLAY}    {NEXT}      {PAUSE}\n")
-    print("You can also send the commands to a pipe by writing to '/tmp/playcd'\nAccepted commands:\n[prev] [next] [play] [pause] [stop]\n")
-
-def main(log_level, shuffle, repeat, only_track, track_number = 1, start_second=0, start_sector=0):
-    try:
+        print("PlayCD Player\n")
         logging.getLogger().setLevel(log_level)
         logging.debug("Parameters: Track:%s, Log level: %s, Shuffle: %s, Repeat: %s, Only Track: %s, Start Second: %s, Start sector: %s",track_number, log_level, shuffle, repeat, only_track, start_second, start_sector)
         if start_second > 0:
@@ -233,16 +215,20 @@ def main(log_level, shuffle, repeat, only_track, track_number = 1, start_second=
             position = start_sector
         load_cd_driver()
         cdinfo()
+        enable_cd_display()
         logging.info("This CD has %s tracks.",len(CDINFO["tracks"]))
         playlist = create_playlist(CDINFO["tracks"],shuffle,repeat,only_track, track_number,position)
-        print_instructions()
-        start_listener()
-        play_playlist(playlist, repeat, shuffle, position)
+        start_pipe_listener()
+        is_tty_valid()
+        start_keyboard_listener()
+        play_playlist(playlist, repeat, shuffle)
         
     except KeyboardInterrupt:
         logging.info("Keyboard Interrupt detected! Stopping the execution!")
     finally:
         print("\n\n\nClosing the application. Please wait...")
         CD.close()
-        LISTENER.stop()
-        KEYBOARD.stop()
+        if PIPE_LISTENER != None:
+            PIPE_LISTENER.stop()
+        if KEYBOARD_LISTENER != None:
+            KEYBOARD_LISTENER.stop()
