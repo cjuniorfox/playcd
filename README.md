@@ -124,6 +124,7 @@ Information about the current disc, track, and playback state can be retrieved a
   "display" : {
     "disc": {
         "operaton": "disc",
+        "tracks" : 14,
         "icon": "",
         "time": { "current": "01:00", "total": "55:00" }
     },

@@ -34,7 +34,7 @@ class CDDisplay:
     
     def _assemble_display_string(self) -> None:
         if self._lines == None:
-            raise ValueError(LINES_ISNULL)
+            raise ValueError(self.LINES_ISNULL)
         car_ret = "\033[F" #\033F return the carriage to the beginning of the previous line
         data = "\n".join(["\r"+l for l in self._lines])
         self._string = car_ret+data
@@ -55,6 +55,7 @@ class CDDisplay:
                             "disc": {
                                 "operaton": CDIcons.DISC.name.lower(),
                                 "icon": CDIcons.DISC,
+                                "tracks" : count,
                                 "time": { "current": disc_time, "total": disc_total }
                             },
                             "track": {
