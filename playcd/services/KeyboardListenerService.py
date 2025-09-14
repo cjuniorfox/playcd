@@ -25,7 +25,8 @@ class KeyboardListenerService:
         
         keys_commands = self.keyboard_listener.get_key_commands()
 
-        keys = keys_commands.keys()
+        #keys = keys_commands.keys()
+        keys=["[Q","A","S","W","D","E","Space]"]
         commands = keys_commands.values()
 
         icons=[f"{CDIcons.REW}", f"{CDIcons.PREV}", f"{CDIcons.STOP}", f"{CDIcons.PLAY}", f"{CDIcons.NEXT}", f"{CDIcons.FF}", f"  {CDIcons.PAUSE}"]

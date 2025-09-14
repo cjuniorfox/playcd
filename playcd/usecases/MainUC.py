@@ -30,7 +30,6 @@ class MainUC:
         is_tty_valid = self.is_tty_valid_service.execute()
         self.keyboard_listener_service.start(is_tty_valid)
         self.keyboard_listener_service.print_keyboard_commands(is_tty_valid)
-        keyboard_listener = self.keyboard_listener_service.get_keyboard_listener()
 
         preparedPlayback = PreparedPlayback(
             self.cd,
