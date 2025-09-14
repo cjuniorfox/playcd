@@ -1,6 +1,5 @@
 from playcd.libs.CDDisplay import CDDisplay
 from playcd.libs.ApiListener import ApiListener
-from playcd.libs.KeyboardListener import KeyboardListener
 from playcd.domain.CDIconsEnum import CDIcons
 from playcd.libs.CDPlayer import CDPlayer
 
@@ -34,16 +33,13 @@ class DisplayService:
             return cd_player.get_lsn(), CDIcons.PLAY
 
     def write_screen(
-            self, 
+            self,
+            command: str,
             api_listener: ApiListener, 
-            keyboard_listener: KeyboardListener,
             cd_player: CDPlayer,
             display: CDDisplay,
             is_tty_valid: bool
         ):
-        command = api_listener.get_command()
-        if not command:
-            command = keyboard_listener.get_command()
         
         if command in ["pause", "stop", "play", "ff", "rew", "quit"]:
             lsn, icon = self._display_info(command, cd_player.get_lsn(), display)

@@ -32,17 +32,18 @@ class TrackService:
         cd_player.start(track.get_start_lsn(), track.get_length()) 
 
         while cd_player.is_playing():
-            self.control_service.control_cdplayer(api_listener, keyboard_listener, cd_player)
+            
+            command = self._get_command(api_listener, keyboard_listener)
+
+            self.control_service.control_cdplayer(command, cd_player)
             
             self.display_service.write_screen(
+                command,
                 api_listener, 
-                keyboard_listener, 
                 cd_player, 
                 preparedPlayback.get_display(), 
                 preparedPlayback.is_tty_valid()
             )
-
-            command = self._get_command(api_listener, keyboard_listener)
 
             if command in ["next", "prev"]:
                 self.logging.debug("TrackService: Received command to go to the %s track.", command)
@@ -53,7 +54,6 @@ class TrackService:
                     cd_player.close()
                     return command
             elif command == "quit":
-                cd_player.close()
                 self.logging.info("Quitting playback as per user request.")
                 raise KeyboardInterrupt
             sleep(0.1)
