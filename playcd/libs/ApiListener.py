@@ -5,7 +5,7 @@ import uvicorn
 from typing import List
 import logging
 
-class APIListener:
+class ApiListener:
     def __init__(self, host, port, logging):
         self._host = host
         self._port = port

@@ -27,7 +27,7 @@ class KeyboardListener:
                     self.command_queue.put(command)
                 time.sleep(0.2)
         except KeyboardInterrupt:
-            this.stop()
+            self.stop()
 
     def _getch(self):
         """Reads a single character from stdin without echoing it to the screen."""
@@ -57,8 +57,8 @@ class KeyboardListener:
         except KeyError:
             self.logging.warn("Unable to parse a command for the key %s",key)
 
-    def get_key_commands() -> dict[str,str]:
-        return this._key_commands
+    def get_key_commands(self) -> dict[str,str]:
+        return self._key_commands
 
     def start(self):
         """Start the keyboard listener thread"""
