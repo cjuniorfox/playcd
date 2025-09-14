@@ -33,7 +33,7 @@ class CDDisplay:
     def create_display(self, lsn: int ,icon = CDIcons.PLAY) -> None:
         tracks = self.cdinfo.get_tracks()
         count = len(tracks)
-        track = [ t for t in tracks if (t.get_start_lsn() <= lsn and t.get_start_lsn() >= lsn )] [0]
+        track = [ t for t in tracks if (t.get_start_lsn() <= lsn and t.end_lsn() >= lsn )] [0]
         number = track.get_number()
     
         track_time = self._format_time(self._sec_to_time(lsn,track.get_start_lsn()))
