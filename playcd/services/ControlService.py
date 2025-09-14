@@ -7,7 +7,7 @@ class ControlService:
     def __init__(self, logging):
         self.logging = logging
 
-    def _send_command(self, command: str, lsn: int, cd_player: CDPlayer):
+    def _send_command(self, command: str, cd_player: CDPlayer):
         if command:
             if command == "pause":
                 cd_player.pause()
@@ -26,12 +26,11 @@ class ControlService:
             self, 
             api_listener : ApiListener, 
             keyboard_listener: KeyboardListener,
-            cd_player: CDPlayer,
-            lsn: int
+            cd_player: CDPlayer
         ):
         command = api_listener.get_command()
         if not command:
             command = keyboard_listener.get_command()
         
-        self._send_command(command, lsn, cd_player)
+        self._send_command(command, cd_player)
         
