@@ -15,7 +15,7 @@ class PreparedPlayback:
             playlist: List[Track], 
             api_listener: ApiListener, 
             keyboard_listener: KeyboardListener,
-            is_tty_valid: bool = False
+            tty_valid: bool = False
         ):
         self.cd = cd
         self.cdinfo = cdinfo
@@ -23,6 +23,7 @@ class PreparedPlayback:
         self.playlist = playlist
         self.api_listener = api_listener
         self.keyboard_listener = keyboard_listener
+        self.tty_valid = tty_valid
 
     def get_cd(self) -> cdio.Device:
         return self.cd
@@ -43,7 +44,7 @@ class PreparedPlayback:
         return self.keyboard_listener
     
     def is_tty_valid(self) -> bool:
-        return self.is_tty_valid
+        return self.tty_valid
     
     def __repr__(self):
         return f"PreparedPlayback(cd={self.cd}, cdinfo={self.cdinfo}, display={self.display}, playlist={self.playlist}, api_listener={self.api_listener}, keyboard_listener={self.keyboard_listener})"
