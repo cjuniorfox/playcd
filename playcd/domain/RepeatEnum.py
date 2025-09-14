@@ -1,4 +1,4 @@
-from typing import StrEnum
+from enum import StrEnum
 
 class RepeatEnum(StrEnum):
     NONE = "no"

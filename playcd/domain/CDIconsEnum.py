@@ -1,4 +1,4 @@
-from typing import StrEnum
+from enum import StrEnum
 
 class CDIcons(StrEnum):
     REW="󰑟"

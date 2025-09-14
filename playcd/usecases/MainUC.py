@@ -16,7 +16,7 @@ class MainUC:
         self.cd_driver_service = CDDriverService(logging)
         self.cd_info_service = CDInfoService(logging)
         self.create_playlist_service = CreatePlaylistService(logging)
-        self.start_api_listener_service = StartApiListenerService(logging)
+        self.api_listener_service = StartApiListenerService(logging)
         self.is_tty_valid_service = IsTtyValidService(logging)
         self.keyboard_listener_service = KeyboardListenerService(logging)
         self.play_service = PlayService(logging)
@@ -26,7 +26,7 @@ class MainUC:
         cdinfo = self.cd_info_service.get_cd_info(self.cd)
         display = CDDisplay(cdinfo)
         playlist = self.create_playlist_service.create(cdinfo,params)
-        api_listener = self.start_api_listener_service.start("::",8001)
+        self.api_listener_service.start("::",8001)
         is_tty_valid = self.is_tty_valid_service.execute()
         self.keyboard_listener_service.start(is_tty_valid)
         self.keyboard_listener_service.print_keyboard_commands(is_tty_valid)
@@ -37,8 +37,8 @@ class MainUC:
             cdinfo,
             display,
             playlist,
-            api_listener,
-            keyboard_listener,
+            self.api_listener_service.get_api_listener(),
+            self.keyboard_listener_service.get_keyboard_listener(),
             is_tty_valid
         )
 
@@ -48,7 +48,7 @@ class MainUC:
         return self.keyboard_listener_service.get_keyboard_listener()
     
     def get_api_listener(self):
-        return self.start_api_listener_service.get_api_listener()
+        return self.api_listener_service.get_api_listener()
     
     def get_cd(self):
         return self.cd
