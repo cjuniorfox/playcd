@@ -13,7 +13,7 @@ class PlayService:
         position = 0
 
         while position < len(playlist):
-            command = self.track_service.play_track(preparedPlayback, position)
+            command = self.track_service.play(preparedPlayback, position)
             if command == "next":
                 position += 1
             elif command == "prev":
