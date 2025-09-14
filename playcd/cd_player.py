@@ -71,7 +71,7 @@ class CDPlayer:
         self._start_lsn=lsn
         self._lsn = lsn
         if length > 0:
-            this._length=length
+            self._length=length
 
     def is_playing(self):
         return self._listener_thread.is_alive()
