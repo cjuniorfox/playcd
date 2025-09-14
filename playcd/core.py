@@ -10,6 +10,7 @@ logging.basicConfig(
 
 def main(log_level, shuffle, repeatStr, only_track, track_number = 1):
     try:
+        logging.getLogger().setLevel(log_level)
         inputParams = InputParams(log_level, shuffle, RepeatEnum(repeatStr), only_track, track_number)
         mainUC = MainUC(logging)
         mainUC.execute(inputParams)
