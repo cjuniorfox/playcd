@@ -110,7 +110,8 @@ def play_cd(playlist, position, single_track = False):
 
 def play_playlist(playlist, repeat, shuffle):
     i = 0
-    single_track = (repeat == "1" or shuffle)
+    #single_track = (repeat == "1" or shuffle)
+    single_track = True # Testing play every track individually because of non-audio tracks
     if not shuffle:
         play_cd(playlist, 0, single_track)
     else:
@@ -131,11 +132,11 @@ def get_track_by_lsn(sector):
         track_number = t["number"]
         if start <= sector <= end:
             return track_number
-    logging.warn("Track sector out of range, assuming track 1")
+    logging.warning("Track sector out of range, assuming track 1")
     return 1
 
 def create_playlist(tracks,shuffle,repeat,only_track,track_number=1):
-    filtered_tracks = [t for t in tracks if int(t["number"]) >= int(track_number)]
+    filtered_tracks = [t for t in tracks if int(t["number"]) >= int(track_number) and t["format"] == "audio"]
     if (only_track or repeat == "1"):
         return [ filtered_tracks[0] ]
     if(shuffle):
