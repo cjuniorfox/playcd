@@ -112,12 +112,12 @@ def play_playlist(playlist, repeat, shuffle):
     i = 0
     #single_track = (repeat == "1" or shuffle)
     single_track = True # Testing play every track individually because of non-audio tracks
-    if not shuffle:
-        play_cd(playlist, 0, single_track)
-    else:
-        while i < len(playlist):
-            command = play_cd(playlist,i,True)
-            i = max(i-1,0) if command == "prev" else min(i+1,len(playlist)-1)
+    #if not shuffle:
+    #    play_cd(playlist, 0, single_track)
+    #else:
+    while i < len(playlist):
+        command = play_cd(playlist,i,True)
+        i = max(i-1,0) if command == "prev" else min(i+1,len(playlist)-1)
     
     if repeat in ["1","all"]: # If repeat 1, the playlist contains a single track
         logging.debug("Repeat All enabled. Playing the entire disc again.")
@@ -154,7 +154,12 @@ def create_playlist(tracks,shuffle,repeat,only_track,track_number=1):
 def cdinfo():
     track_num = 1
     tracks = []
-    num_tracks = CD.get_num_tracks()
+    try:
+        num_tracks = CD.get_num_tracks()
+    except cdio.TrackError as e:
+        error="Unable to get the track information. Perhaps there is no disc inserted ?"
+        logging.debug('CD.get_num_tracks() raised a TrackError exception with: "%s".', e)
+        raise RuntimeError(error)
     while track_num <= num_tracks:
         track = CD.get_track(track_num)
         tracks.append( {
