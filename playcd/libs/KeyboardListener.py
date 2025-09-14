@@ -52,7 +52,7 @@ class KeyboardListener:
             if ord(key) == 3:
                 return "quit"
             command = self._key_commands[key]
-            self.logging.debug("KeyboardListener: key % pressed for command: %s.", key, command)
+            self.logging.debug("KeyboardListener: key %s pressed for command: %s.", key, command)
             return command
         except KeyError:
             self.logging.warn("Unable to parse a command for the key %s",key)
