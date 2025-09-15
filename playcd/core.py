@@ -30,32 +30,32 @@ def initialize_ucs() -> tuple[MainUC, CloseApplicationUC]:
         control_service = ControlService(logging)
         display_service = DisplayService(logging, api_listener_service)
         track_service = TrackService(
-             logging,
-             cd_driver_service, 
-             api_listener_service, 
-             keyboard_listener_service,
-             control_service,
-             display_service
+            logging= logging,
+            api_listener_service= api_listener_service,
+            keyboard_listener_service= keyboard_listener_service,
+            cd_driver_service= cd_driver_service,
+            control_service= control_service,
+            display_service= display_service
         )
         play_service = PlayService(logging, track_service)
 
         mainUC = MainUC(
-            logging,
-            cd_driver_service,
-            cd_info_service,
-            create_playlist_service,
-            api_listener_service,
-            is_tty_valid_service,
-            keyboard_listener_service,
-            play_service,
-            display_service
+            logging= logging,
+            cd_driver_service= cd_driver_service,
+            cd_info_service= cd_info_service,
+            create_playlist_service= create_playlist_service,
+            api_listener_service= api_listener_service,
+            is_tty_valid_service= is_tty_valid_service,
+            keyboard_listener_service= keyboard_listener_service,
+            play_service= play_service,
+            display_service= display_service
         )
 
         closeApplicationUC = CloseApplicationUC(
-            logging,
-            keyboard_listener_service,
-            api_listener_service,
-            cd_driver_service
+            logging= logging,
+            keyboard_listener_service= keyboard_listener_service,
+            api_listener_service= api_listener_service,
+            cd_driver_service= cd_driver_service
         )
 
         return mainUC, closeApplicationUC
