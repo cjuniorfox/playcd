@@ -17,8 +17,8 @@ class TrackService:
             api_listener_service: StartApiListenerService,
             keyboard_listener_service: KeyboardListenerService,
             cd_driver_service: CDDriverService,
-            control_service: ControlService = ControlService(logging),
-            display_service: DisplayService = DisplayService(logging)
+            control_service: ControlService,
+            display_service: DisplayService
         ):
         self.logging = logging
         self.cd_driver_service = cd_driver_service
