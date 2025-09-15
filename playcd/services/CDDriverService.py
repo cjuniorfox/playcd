@@ -8,7 +8,10 @@ class CDDriverService:
 
     def open_cd(self) -> cdio.Device:
         self.logging.info("Opening CD device...")
-        cd = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
-        cd.open()
+        self.cd = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
+        self.cd.open()
         self.logging.debug("CD device opened successfully.")
-        return cd
+        return self.cd
+    
+    def get_cd(self) -> cdio.Device:
+        return self.cd

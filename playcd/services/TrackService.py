@@ -4,44 +4,54 @@ from playcd.services.ControlService import ControlService
 from playcd.services.DisplayService import DisplayService
 from playcd.libs.ApiListener import ApiListener
 from playcd.libs.KeyboardListener import KeyboardListener
+from playcd.services.StartApiListenerService import StartApiListenerService
+from playcd.services.KeyboardListenerService import KeyboardListenerService
+from playcd.services.CDDriverService import CDDriverService
+import logging
 from time import sleep
 
 class TrackService:
-    def __init__(self, logging):
+    def __init__(
+            self, 
+            logging: logging,
+            api_listener_service: StartApiListenerService,
+            keyboard_listener_service: KeyboardListenerService,
+            cd_driver_service: CDDriverService,
+            control_service: ControlService = ControlService(logging),
+            display_service: DisplayService = DisplayService(logging)
+        ):
         self.logging = logging
-        self.control_service = ControlService(logging)
-        self.display_service = DisplayService(logging)
+        self.cd_driver_service = cd_driver_service
+        self.api_listener_service = api_listener_service
+        self.keyboard_listener_service = keyboard_listener_service
+        self.control_service = control_service
+        self.display_service = display_service
 
-    def _get_command(self, api_listener: ApiListener, keyboard_listener: KeyboardListener) -> str:
-        command = api_listener.get_command()
+    def _get_command(self) -> str:
+        command = self.api_listener_service.get_api_listener().get_command()
         if not command:
-            command = keyboard_listener.get_command()
+            command = self.keyboard_listener_service.get_keyboard_listener().get_command()
         return command
 
     def play(self, preparedPlayback : PreparedPlayback, position: int) -> str:
-
-        api_listener = preparedPlayback.get_api_listener()
-        keyboard_listener = preparedPlayback.get_keyboard_listener()
         
         track = preparedPlayback.get_playlist()[position]
 
         self.logging.info("Starting playback of the track: %s", track.get_number())
         self.logging.info("Playing CD from %s with length of %s sectors.", track.get_start_lsn(), track.get_length())
         
-        cd_player = CDPlayer(preparedPlayback.get_cd(), self.logging)
+        cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
         cd_player.start(track.get_start_lsn(), track.get_length()) 
 
         while cd_player.is_playing():
             
-            command = self._get_command(api_listener, keyboard_listener)
+            command = self._get_command()
 
             self.control_service.control_cdplayer(command, cd_player)
             
             self.display_service.write_screen(
                 command,
-                api_listener, 
                 cd_player, 
-                preparedPlayback.get_display(), 
                 preparedPlayback.is_tty_valid()
             )
 

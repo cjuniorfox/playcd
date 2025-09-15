@@ -1,15 +1,16 @@
+import logging
 from playcd.domain.PreparedPlayback import PreparedPlayback
 from playcd.services.TrackService import TrackService
 from playcd.domain.RepeatEnum import RepeatEnum
 
 class PlayService:
-    def __init__(self, logging):
+    def __init__(self,logging: logging,track_service: TrackService):
         self.logging = logging
-        self.track_service = TrackService(logging)
+        self.track_service = track_service
 
     def play(self, preparedPlayback: PreparedPlayback, repeat: RepeatEnum, shuffle: bool):
         self.logging.info("Starting playback with repeat=%s and shuffle=%s", repeat, shuffle)
-        playlist = preparedPlayback.playlist
+        playlist = preparedPlayback.get_playlist()
         position = 0
 
         while position < len(playlist):

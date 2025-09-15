@@ -1,13 +1,15 @@
 from playcd.libs.CDDisplay import CDDisplay
-from playcd.libs.ApiListener import ApiListener
 from playcd.domain.CDIconsEnum import CDIcons
 from playcd.libs.CDPlayer import CDPlayer
+from playcd.services.StartApiListenerService import StartApiListenerService
+from playcd.domain.DiscInformation import DiscInformation
 
 class DisplayService:
-    def __init__(self, logging):
+    def __init__(self, logging, api_listener_service: StartApiListenerService):
         self.logging = logging
+        self.api_listener_service = api_listener_service
 
-    def _display_info(self, command: str, lsn: int, display: CDDisplay) -> tuple[int, CDIcons]:
+    def _display_info(self, command: str, lsn: int) -> tuple[int, CDIcons]:
         if command:
             if command == "pause":
                 return lsn, CDIcons.PAUSE
@@ -31,23 +33,25 @@ class DisplayService:
             return 0, CDIcons.STOP
         else:
             return cd_player.get_lsn(), CDIcons.PLAY
-
+        
+    def set_cd_info(self, cd_info: DiscInformation):
+        self.cd_info = cd_info
+        self.cd_display = CDDisplay(cd_info)
+        
     def write_screen(
             self,
             command: str,
-            api_listener: ApiListener, 
             cd_player: CDPlayer,
-            display: CDDisplay,
             is_tty_valid: bool
         ):
         
         if command in ["pause", "stop", "play", "ff", "rew", "quit"]:
-            lsn, icon = self._display_info(command, cd_player.get_lsn(), display)
+            lsn, icon = self._display_info(command, cd_player.get_lsn())
         else:
             lsn, icon = self._display_info_from_cdplayer(cd_player)
         if is_tty_valid:
-            display.display(lsn, icon)
+            self.cd_display.display(lsn, icon)
         else:
-            display.create_display(lsn, icon)
+            self.cd_display.create_display(lsn, icon)
 
-        api_listener.set_display(display.get_display())
+        self.api_listener_service.get_api_listener().set_display(self.cd_display.get_display())

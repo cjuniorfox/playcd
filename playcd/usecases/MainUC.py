@@ -9,46 +9,48 @@ from playcd.services.PlayService import PlayService
 from playcd.domain.InputParams import InputParams
 from playcd.domain.PreparedPlayback import PreparedPlayback
 from playcd.libs.CDDisplay import CDDisplay
-class MainUC:
+from playcd.services.DisplayService import DisplayService
 
-    def __init__(self,logging: logging):
+
+class MainUC:
+    """ Main use case to run the application."""
+
+    def __init__(
+            self,
+            logging: logging,
+            cd_driver_service: CDDriverService,
+            cd_info_service: CDInfoService,
+            create_playlist_service: CreatePlaylistService,
+            api_listener_service: StartApiListenerService,
+            is_tty_valid_service: IsTtyValidService,
+            keyboard_listener_service: KeyboardListenerService,
+            play_service: PlayService,
+            display_service: DisplayService
+        ):
         self.logging = logging
-        self.cd_driver_service = CDDriverService(logging)
-        self.cd_info_service = CDInfoService(logging)
-        self.create_playlist_service = CreatePlaylistService(logging)
-        self.api_listener_service = StartApiListenerService(logging)
-        self.is_tty_valid_service = IsTtyValidService(logging)
-        self.keyboard_listener_service = KeyboardListenerService(logging)
-        self.play_service = PlayService(logging)
+        self.cd_driver_service = cd_driver_service
+        self.cd_info_service = cd_info_service
+        self.create_playlist_service = create_playlist_service
+        self.api_listener_service = api_listener_service
+        self.is_tty_valid_service = is_tty_valid_service
+        self.keyboard_listener_service = keyboard_listener_service
+        self.play_service = play_service
+        self.display_service = display_service
 
     def execute(self,params : InputParams):
         self.cd = self.cd_driver_service.open_cd()
         cdinfo = self.cd_info_service.get_cd_info(self.cd)
-        display = CDDisplay(cdinfo)
         playlist = self.create_playlist_service.create(cdinfo,params)
         self.api_listener_service.start("::",8001)
+        self.display_service.set_cd_info(cdinfo)
         is_tty_valid = self.is_tty_valid_service.execute()
         self.keyboard_listener_service.print_keyboard_commands(is_tty_valid)
         self.keyboard_listener_service.start(is_tty_valid)
 
         preparedPlayback = PreparedPlayback(
-            self.cd,
             cdinfo,
-            display,
             playlist,
-            self.api_listener_service.get_api_listener(),
-            self.keyboard_listener_service.get_keyboard_listener(),
             is_tty_valid
         )
 
         self.play_service.play(preparedPlayback, params.repeat, params.shuffle)
-
-    def get_keyboard_listener(self):
-        return self.keyboard_listener_service.get_keyboard_listener()
-    
-    def get_api_listener(self):
-        return self.api_listener_service.get_api_listener()
-    
-    def get_cd(self):
-        return self.cd
-        
