@@ -26,7 +26,7 @@ def initialize_ucs() -> tuple[MainUC, CloseApplicationUC]:
         create_playlist_service = CreatePlaylistService(logging)
         api_listener_service = StartApiListenerService(logging)
         is_tty_valid_service = IsTtyValidService(logging)
-        keyboard_listener_service = KeyboardListenerService(logging),
+        keyboard_listener_service = KeyboardListenerService(logging)
         control_service = ControlService(logging)
         display_service = DisplayService(logging, api_listener_service)
         track_service = TrackService(
