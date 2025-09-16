@@ -43,14 +43,14 @@ class MainUC:
         playlist = self.create_playlist_service.create(cdinfo,params)
         self.api_listener_service.start("::",8001)
         self.display_service.set_cd_info(cdinfo)
-        is_tty_valid = self.is_tty_valid_service.execute()
-        self.keyboard_listener_service.print_keyboard_commands(is_tty_valid)
-        self.keyboard_listener_service.start(is_tty_valid)
+        tty_valid = self.is_tty_valid_service.execute()
+        self.keyboard_listener_service.print_keyboard_commands(tty_valid)
+        self.keyboard_listener_service.start(tty_valid)
 
         preparedPlayback = PreparedPlayback(
             cdinfo= cdinfo,
             playlist= playlist,
-            is_tty_valid= is_tty_valid
+            tty_valid= tty_valid
         )
 
         self.play_service.play(preparedPlayback, params.repeat, params.shuffle)
