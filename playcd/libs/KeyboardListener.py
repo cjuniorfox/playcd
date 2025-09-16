@@ -58,7 +58,7 @@ class KeyboardListener:
         except KeyError:
             self.logging.warn("Unable to parse a command for the key %s",key)
 
-    def get_key_commands(self) -> dict[str,str]:
+    def get_key_commands(self) -> dict[str,CDPlayerCommandsEnum]:
         return self._key_commands
 
     def start(self):
