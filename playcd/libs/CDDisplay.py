@@ -1,22 +1,13 @@
 import sys
 from typing import List, Tuple
-from enum import StrEnum
-
-class CDIcons(StrEnum):
-    REW="󰑟"
-    PREV="\uf049"
-    STOP="\uf04d"
-    PLAY="\uf04b"
-    NEXT="\uf050"
-    FF=""
-    PAUSE="\uf04c"
-    DISC="\uede9"
-
+from playcd.domain.CDIconsEnum import CDIcons
+from playcd.domain.DiscInformation import DiscInformation
+from playcd.domain.Track import Track
 
 class CDDisplay:
     
     LINES_ISNULL = "_lines is null. Call create_display first."
-    def __init__(self,cdinfo):
+    def __init__(self,cdinfo: DiscInformation):
         self.cdinfo = cdinfo
         self._lines = None
         self._string = None
@@ -39,16 +30,16 @@ class CDDisplay:
         data = "\n".join(["\r"+l for l in self._lines])
         self._string = car_ret+data
 
-    def create_display(self, sector: int ,icon = CDIcons.PLAY) -> None:
-        tracks = self.cdinfo["tracks"]
+    def create_display(self, lsn: int ,icon = CDIcons.PLAY) -> None:
+        tracks = self.cdinfo.get_tracks()
         count = len(tracks)
-        track = [ t for t in tracks if (t["start"] <= sector and t["length"] + t["start"] >= sector )] [0]
-        number = track["number"]
+        track = [ t for t in tracks if (t.get_start_lsn() <= lsn and t.get_end_lsn() >= lsn )] [0]
+        number = track.get_number()
     
-        track_time = self._format_time(self._sec_to_time(sector,track["start"]))
-        track_total = self._format_time(self._sec_to_time(track["length"]))
-        disc_time = self._format_time(self._sec_to_time(sector))
-        disc_total = self._format_time(self._sec_to_time(self.cdinfo["total"]))
+        track_time = self._format_time(self._sec_to_time(lsn,track.get_start_lsn()))
+        track_total = self._format_time(self._sec_to_time(track.get_length()))
+        disc_time = self._format_time(self._sec_to_time(lsn))
+        disc_total = self._format_time(self._sec_to_time(self.cdinfo.get_total()))
         
         lines = []
         self._display = {

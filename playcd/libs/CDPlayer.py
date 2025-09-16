@@ -76,10 +76,10 @@ class CDPlayer:
     def is_playing(self):
         return self._listener_thread.is_alive()
     
-    def is_stop(self):
+    def is_stopped(self):
         return self._stop
 
-    def is_pause(self):
+    def is_paused(self):
         return self._pause
 
     def start(self,start_lsn,length):

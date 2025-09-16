@@ -4,8 +4,9 @@ import threading
 import uvicorn
 from typing import List
 import logging
+from playcd.domain.CDPlayerCommadsEnum import CDPlayerCommandsEnum
 
-class APIListener:
+class ApiListener:
     def __init__(self, host, port, logging):
         self._host = host
         self._port = port
@@ -14,19 +15,20 @@ class APIListener:
         self._display_data = None
         self._app = FastAPI()
         self._setup_routes()
-        self._allowed_commands: List[str] = ["play", "pause","stop","next","prev","ff","rew"]
         self._is_running = False
 
     def _setup_routes(self) -> None:
         @self._app.post("/command/{cmd}")
         def send_command(cmd:str, response: Response) -> dict[str,str]:
-            if cmd not in self._allowed_commands:
+            try:
+                cmd = cmd.lower()
+                comamnd = CDPlayerCommandsEnum(cmd)
+                self._command_queue.queue.clear()
+                self._command_queue.put(comamnd)
+                return { "status" : "queued", "command": comamnd.value }
+            except ValueError:
                 response.status_code = status.HTTP_400_BAD_REQUEST
                 return { "status": "invalid", "command": cmd }
-            self._command_queue.queue.clear()
-            self._command_queue.put(cmd)
-            response.status_code = status.HTTP_201_CREATED
-            return { "status" : "queued", "command": cmd }
 
         @self._app.get("/display")
         def get_display(response: Response) -> dict:
