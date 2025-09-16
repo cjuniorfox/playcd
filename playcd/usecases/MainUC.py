@@ -48,9 +48,9 @@ class MainUC:
         self.keyboard_listener_service.start(is_tty_valid)
 
         preparedPlayback = PreparedPlayback(
-            cdinfo,
-            playlist,
-            is_tty_valid
+            cdinfo= cdinfo,
+            playlist= playlist,
+            is_tty_valid= is_tty_valid
         )
 
         self.play_service.play(preparedPlayback, params.repeat, params.shuffle)

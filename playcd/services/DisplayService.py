@@ -3,25 +3,26 @@ from playcd.domain.CDIconsEnum import CDIcons
 from playcd.libs.CDPlayer import CDPlayer
 from playcd.services.StartApiListenerService import StartApiListenerService
 from playcd.domain.DiscInformation import DiscInformation
+from playcd.domain.CDPlayerCommadsEnum import CDPlayerCommandsEnum
 
 class DisplayService:
     def __init__(self, logging, api_listener_service: StartApiListenerService):
         self.logging = logging
         self.api_listener_service = api_listener_service
 
-    def _display_info(self, command: str, lsn: int) -> tuple[int, CDIcons]:
+    def _display_info(self, command: CDPlayerCommandsEnum, lsn: int) -> tuple[int, CDIcons]:
         if command:
-            if command == "pause":
+            if command == CDPlayerCommandsEnum.PAUSE:
                 return lsn, CDIcons.PAUSE
-            elif command == "stop":
+            elif command == CDPlayerCommandsEnum.STOP:
                 return 0, CDIcons.STOP
-            elif command == "play":
+            elif command == CDPlayerCommandsEnum.PLAY:
                 return lsn, CDIcons.PLAY
-            elif command == "ff":
+            elif command == CDPlayerCommandsEnum.FF:
                 return lsn, CDIcons.FF
-            elif command == "rew":
+            elif command == CDPlayerCommandsEnum.REW:
                 return lsn, CDIcons.REW
-            elif command == "quit":
+            elif command == CDPlayerCommandsEnum.QUIT:
                 return 0, CDIcons.STOP
         else:
             return lsn, CDIcons.PLAY
@@ -40,12 +41,12 @@ class DisplayService:
         
     def write_screen(
             self,
-            command: str,
+            command: CDPlayerCommandsEnum | None,
             cd_player: CDPlayer,
             is_tty_valid: bool
         ):
         
-        if command in ["pause", "stop", "play", "ff", "rew", "quit"]:
+        if command in [CDPlayerCommandsEnum.PAUSE, CDPlayerCommandsEnum.STOP, CDPlayerCommandsEnum.PLAY, CDPlayerCommandsEnum.FF, CDPlayerCommandsEnum.REW, CDPlayerCommandsEnum.QUIT]:
             lsn, icon = self._display_info(command, cd_player.get_lsn())
         else:
             lsn, icon = self._display_info_from_cdplayer(cd_player)
