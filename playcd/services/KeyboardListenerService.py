@@ -28,13 +28,13 @@ class KeyboardListenerService:
 
         #keys = keys_commands.keys()
 #       keys=["[Q","A","S","W","D","E","Space]"]
-        keys=[i.key for i in list(CDPlayerEnum)]
-        icons=[i.icon for i in list(CDPlayerEnum)]
+        keys=[i.key_display for i in list(CDPlayerEnum) if i.key_display != None]
+        icons=["  " + i.icon + "  " if i.command == "pause" else i.icon for i in list(CDPlayerEnum) if i.key_display != None]
 
 
 #        icons=[f"{CDIcons.REW}", f"{CDIcons.PREV}", f"{CDIcons.STOP}", f"{CDIcons.PLAY}", f"{CDIcons.NEXT}", f"{CDIcons.FF}", f"  {CDIcons.PAUSE}"]
     
         print("Keyboard Commands:")
 #        print("","]  [".join(keys),)
-        print(" ","  ".join(keys))
-        print(" ","    ".join(icons),"\n")
+        print(" "," ".join(keys))
+        print("  ","   ".join(icons),"\n")

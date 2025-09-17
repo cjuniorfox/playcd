@@ -5,12 +5,12 @@ class CDPlayerEnum(Enum):
     PREV =  ("previous"    , "\uf049", "a", "[A]")
     STOP =  ("stop"        , "\uf04d", "s", "[S]")
     PLAY =  ("play"        , "\uf04b", "w", "[W]")
-    PAUSE = ("pause"       ,"\uf04c" , " ","  [Space]")
+    PAUSE = ("pause"       ,"\uf04c" , " ","[Space]")
     NEXT =  ("next"        , "\uf050", "d","[D]")
     FF =    ("fast-forward", "\uf04e", "e","[E]")
-    DISC =  ("eject"       , "\uede9", "x","[x]")
+    DISC =  ("eject"       , "\uede9", "x",None)
 
-    def __init__(self, command: str, key: str, key_display: str, icon: str) -> None:
+    def __init__(self, command: str, icon: str, key: str, key_display: str) -> None:
         self.command = command
         self.key = key
         self.key_display = key_display
