@@ -4,7 +4,7 @@ import termios
 import tty
 import queue
 import time
-from playcd.domain.CDPlayerCommadsEnum import CDPlayerCommandsEnum
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class KeyboardListener:
     def __init__(self,logging):
@@ -12,10 +12,6 @@ class KeyboardListener:
         self.command_queue = queue.Queue()
         self.is_running = False
         self.old_settings = None
-
-        keys = ["q","a","d","e"," ","s","w"]
-        commands = [CDPlayerCommandsEnum.REW,CDPlayerCommandsEnum.PREV,CDPlayerCommandsEnum.NEXT,CDPlayerCommandsEnum.FF,CDPlayerCommandsEnum.PAUSE,CDPlayerCommandsEnum.STOP,CDPlayerCommandsEnum.PLAY]
-        self._key_commands = dict(zip(keys,commands))
 
     def _listener_thread_func(self):
         """Core listener"""
@@ -47,19 +43,16 @@ class KeyboardListener:
             termios.tcsetattr(fd, termios.TCSADRAIN, self.old_settings)
         return ch
     
-    def _get_command_from_key(self) -> CDPlayerCommandsEnum | None:
+    def _get_command_from_key(self) -> CDPlayerEnum | None:
         key = self._getch()
         try:
             if ord(key) == 3:
-                return CDPlayerCommandsEnum.QUIT
-            command = self._key_commands[key]
-            self.logging.debug("KeyboardListener: key %s pressed for command: %s.", key, command.value)
+                return CDPlayerEnum.QUIT
+            command = CDPlayerEnum.from_key(key)
+            self.logging.debug("KeyboardListener: key %s pressed for command: %s.", key, command)
             return command
         except KeyError:
             self.logging.warn("Unable to parse a command for the key %s",key)
-
-    def get_key_commands(self) -> dict[str,CDPlayerCommandsEnum]:
-        return self._key_commands
 
     def start(self):
         """Start the keyboard listener thread"""

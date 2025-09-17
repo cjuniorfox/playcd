@@ -2,7 +2,7 @@ import logging
 from playcd.domain.PreparedPlayback import PreparedPlayback
 from playcd.services.TrackService import TrackService
 from playcd.domain.RepeatEnum import RepeatEnum
-from playcd.domain.CDPlayerCommadsEnum import CDPlayerCommandsEnum
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class PlayService:
     def __init__(self,logging: logging,track_service: TrackService):
@@ -16,9 +16,9 @@ class PlayService:
 
         while position < len(playlist):
             command = self.track_service.play(preparedPlayback, position)
-            if command == CDPlayerCommandsEnum.NEXT:
+            if command == CDPlayerEnum.NEXT:
                 position += 1
-            elif command == CDPlayerCommandsEnum.PREV:
+            elif command == CDPlayerEnum.PREV:
                 position = max(0, position - 1)
             else:
                 position += 1
