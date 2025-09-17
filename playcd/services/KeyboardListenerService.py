@@ -1,6 +1,5 @@
 import logging
 from playcd.libs.KeyboardListener import KeyboardListener
-#from playcd.libs.CDDisplay import CDIcons
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class KeyboardListenerService:
@@ -23,18 +22,11 @@ class KeyboardListenerService:
     def print_keyboard_commands(self, is_tty_valid: bool) -> None:
         if not is_tty_valid:
             return
-        
-        keys_commands = self.keyboard_listener.get_key_commands()
 
-        #keys = keys_commands.keys()
-#       keys=["[Q","A","S","W","D","E","Space]"]
         keys=[i.key_display for i in list(CDPlayerEnum) if i.key_display != None]
+        # Add extra spaces around the pause icon for better alignment
         icons=["  " + i.icon + "  " if i.command == "pause" else i.icon for i in list(CDPlayerEnum) if i.key_display != None]
-
-
-#        icons=[f"{CDIcons.REW}", f"{CDIcons.PREV}", f"{CDIcons.STOP}", f"{CDIcons.PLAY}", f"{CDIcons.NEXT}", f"{CDIcons.FF}", f"  {CDIcons.PAUSE}"]
     
         print("Keyboard Commands:")
-#        print("","]  [".join(keys),)
         print(" "," ".join(keys))
         print("  ","   ".join(icons),"\n")
