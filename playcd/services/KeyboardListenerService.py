@@ -1,6 +1,7 @@
 import logging
 from playcd.libs.KeyboardListener import KeyboardListener
-from playcd.libs.CDDisplay import CDIcons
+#from playcd.libs.CDDisplay import CDIcons
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class KeyboardListenerService:
     def __init__(self, logging: logging) -> None:
@@ -26,11 +27,14 @@ class KeyboardListenerService:
         keys_commands = self.keyboard_listener.get_key_commands()
 
         #keys = keys_commands.keys()
-        keys=["[Q","A","S","W","D","E","Space]"]
-        commands = keys_commands.values()
+#       keys=["[Q","A","S","W","D","E","Space]"]
+        keys=[i.key for i in list(CDPlayerEnum)]
+        icons=[i.icon for i in list(CDPlayerEnum)]
 
-        icons=[f"{CDIcons.REW}", f"{CDIcons.PREV}", f"{CDIcons.STOP}", f"{CDIcons.PLAY}", f"{CDIcons.NEXT}", f"{CDIcons.FF}", f"  {CDIcons.PAUSE}"]
+
+#        icons=[f"{CDIcons.REW}", f"{CDIcons.PREV}", f"{CDIcons.STOP}", f"{CDIcons.PLAY}", f"{CDIcons.NEXT}", f"{CDIcons.FF}", f"  {CDIcons.PAUSE}"]
     
         print("Keyboard Commands:")
-        print("","]  [".join(keys),)
+#        print("","]  [".join(keys),)
+        print(" ","  ".join(keys))
         print(" ","    ".join(icons),"\n")
