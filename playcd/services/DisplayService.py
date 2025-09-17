@@ -11,11 +11,11 @@ class DisplayService:
 
     def _display_info_from_cdplayer(self, cd_player: CDPlayer) -> tuple[int, CDPlayerEnum]:
         if cd_player.is_paused():
-            return cd_player.get_lsn(), CDPlayerEnum.PAUSE.icon
+            return cd_player.get_lsn(), CDPlayerEnum.PAUSE
         elif cd_player.is_stopped():
-            return 0, CDPlayerEnum.STOP.icon
+            return 0, CDPlayerEnum.STOP
         else:
-            return cd_player.get_lsn(), CDPlayerEnum.PLAY.icon
+            return cd_player.get_lsn(), CDPlayerEnum.PLAY
         
     def set_cd_info(self, cd_info: DiscInformation):
         self.cd_info = cd_info
@@ -27,8 +27,8 @@ class DisplayService:
             cd_player: CDPlayer,
             is_tty_valid: bool
         ):
-        if command in [CDPlayerEnum.STOP, CDPlayerEnum.QUIT]:
-            lsn = 0
+        if command == None:
+            lsn, command = self._display_info_from_cdplayer(cd_player)
         else:
             lsn = cd_player.get_lsn()
         if is_tty_valid:
