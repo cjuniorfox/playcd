@@ -4,7 +4,7 @@ import threading
 import uvicorn
 from typing import List
 import logging
-from playcd.domain.CDPlayerCommadsEnum import CDPlayerCommandsEnum
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class ApiListener:
     def __init__(self, host, port, logging):
@@ -22,10 +22,10 @@ class ApiListener:
         def send_command(cmd:str, response: Response) -> dict[str,str]:
             try:
                 cmd = cmd.lower()
-                comamnd = CDPlayerCommandsEnum(cmd)
+                comamnd = CDPlayerEnum.from_command(cmd)
                 self._command_queue.queue.clear()
                 self._command_queue.put(comamnd)
-                return { "status" : "queued", "command": comamnd.value }
+                return { "status" : "queued", "command": comamnd }
             except ValueError:
                 response.status_code = status.HTTP_400_BAD_REQUEST
                 return { "status": "invalid", "command": cmd }

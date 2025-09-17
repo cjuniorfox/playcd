@@ -1,8 +1,7 @@
 import sys
 from typing import List, Tuple
-from playcd.domain.CDIconsEnum import CDIcons
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 from playcd.domain.DiscInformation import DiscInformation
-from playcd.domain.Track import Track
 
 class CDDisplay:
     
@@ -30,7 +29,7 @@ class CDDisplay:
         data = "\n".join(["\r"+l for l in self._lines])
         self._string = car_ret+data
 
-    def create_display(self, lsn: int ,icon = CDIcons.PLAY) -> None:
+    def create_display(self, lsn: int ,command : CDPlayerEnum = CDPlayerEnum.PLAY) -> None:
         tracks = self.cdinfo.get_tracks()
         count = len(tracks)
         track = [ t for t in tracks if (t.get_start_lsn() <= lsn and t.get_end_lsn() >= lsn )] [0]
@@ -44,21 +43,21 @@ class CDDisplay:
         lines = []
         self._display = {
                             "disc": {
-                                "operaton": CDIcons.DISC.name.lower(),
-                                "icon": CDIcons.DISC,
+                                "command": CDPlayerEnum.DISC,
+                                "icon": CDPlayerEnum.DISC.icon,
                                 "tracks" : count,
                                 "time": { "current": disc_time, "total": disc_total }
                             },
                             "track": {
-                                "operation" : icon.name.lower(),
-                                "icon" : icon,
+                                "command" : command,
+                                "icon" : command.icon,
                                 "track" : number,
                                 "time" : { "current" : track_time, "total" : track_total }
                             }
                         }
     
-        lines.append(f"{CDIcons.DISC} {count:2} {disc_time} / {disc_total}")
-        lines.append(f"{icon} {number:2} {track_time} / {track_total}")
+        lines.append(f"{CDPlayerEnum.DISC.icon} {count:2} {disc_time} / {disc_total}")
+        lines.append(f"{command.icon} {number:2} {track_time} / {track_total}")
     
         self._lines = lines
 
@@ -68,14 +67,14 @@ class CDDisplay:
         self._assemble_display_string()
         print(self._string,flush=True, end="", file=sys.stderr)
 
-    def display(self, sector: int, icon = CDIcons.PLAY) -> None:
-        self.create_display(sector, icon)
+    def display(self, sector: int, command : CDPlayerEnum = CDPlayerEnum.PLAY) -> None:
+        self.create_display(sector, command)
         self._assemble_display_string()
         self.print_display()
 
     def get_display(self):
         return self._display
     
-    def display_lines(self, sector: int, icon = CDIcons.PLAY) -> List[str]:
-        self.create_display(sector,icon)
+    def display_lines(self, sector: int, command: CDPlayerEnum = CDPlayerEnum.PLAY) -> List[str]:
+        self.create_display(sector, command)
         return self._lines

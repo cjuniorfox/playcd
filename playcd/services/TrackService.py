@@ -5,7 +5,7 @@ from playcd.services.DisplayService import DisplayService
 from playcd.services.StartApiListenerService import StartApiListenerService
 from playcd.services.KeyboardListenerService import KeyboardListenerService
 from playcd.services.CDDriverService import CDDriverService
-from playcd.domain.CDPlayerCommadsEnum import CDPlayerCommandsEnum
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 import logging
 from time import sleep
 
@@ -26,13 +26,13 @@ class TrackService:
         self.control_service = control_service
         self.display_service = display_service
 
-    def _get_command(self) -> CDPlayerCommandsEnum | None:
+    def _get_command(self) -> CDPlayerEnum | None:
         command = self.api_listener_service.get_api_listener().get_command()
         if not command:
             command = self.keyboard_listener_service.get_keyboard_listener().get_command()
         return command
 
-    def play(self, preparedPlayback : PreparedPlayback, position: int) -> CDPlayerCommandsEnum | None:
+    def play(self, preparedPlayback : PreparedPlayback, position: int) -> CDPlayerEnum | None:
         
         track = preparedPlayback.get_playlist()[position]
 
@@ -54,15 +54,15 @@ class TrackService:
                 preparedPlayback.is_tty_valid()
             )
 
-            if command in [CDPlayerCommandsEnum.NEXT, CDPlayerCommandsEnum.PREV]:
-                self.logging.debug("TrackService: Received command to go to the %s track.", command.value)
-                if command == CDPlayerCommandsEnum.PREV and cd_player.get_lsn() - track.get_start_lsn() > 150:
+            if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
+                self.logging.debug("TrackService: Received command to go to the %s track.", command)
+                if command == CDPlayerEnum.PREV and cd_player.get_lsn() - track.get_start_lsn() > 150:
                     cd_player.jump(track.get_start_lsn())
                 else:
                     self.logging.debug("Stopping current track to go to the %s track.", command)
                     cd_player.close()
                     return command
-            elif command == CDPlayerCommandsEnum.QUIT:
+            elif command == CDPlayerEnum.QUIT:
                 self.logging.info("Quitting playback as per user request.")
                 raise KeyboardInterrupt
             sleep(0.1)

@@ -1,5 +1,5 @@
 from playcd.libs.CDPlayer import CDPlayer
-from playcd.domain.CDPlayerCommadsEnum import CDPlayerCommandsEnum
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class ControlService:
 
@@ -8,15 +8,15 @@ class ControlService:
 
     def control_cdplayer(self, command: str, cd_player: CDPlayer):
         if command:
-            if command == CDPlayerCommandsEnum.PAUSE:
+            if command == CDPlayerEnum.PAUSE:
                 cd_player.pause()
-            elif command == CDPlayerCommandsEnum.STOP:
+            elif command == CDPlayerEnum.STOP:
                 cd_player.stop()
-            elif command == CDPlayerCommandsEnum.PLAY:
+            elif command == CDPlayerEnum.PLAY:
                 cd_player.play()
-            elif command == CDPlayerCommandsEnum.FF:
+            elif command == CDPlayerEnum.FF:
                 cd_player.fast_forward()
-            elif command == CDPlayerCommandsEnum.REW:
+            elif command == CDPlayerEnum.REW:
                 cd_player.rewind()
-            elif command == CDPlayerCommandsEnum.QUIT:
+            elif command == CDPlayerEnum.QUIT:
                 cd_player.close()        
