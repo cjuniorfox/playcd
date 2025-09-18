@@ -53,6 +53,8 @@ class DisplayInformationService:
             )
         )
 
-    def get(self) -> DisplayInformation | None:
+    def get(self) -> DisplayInformation:
+        if self.display_information == None:
+            raise ValueError("display_information cannot be null. Set update first")
         return self.display_information
         
