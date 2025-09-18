@@ -40,8 +40,9 @@ class DisplayDiscInformation:
         self.lines.append(f"{track_icon} {track_number:2} {current_track_time} / {total_track_time}")
 
     def print(self) -> None:
-        self.display_information = self.display_information_service.display_information()
-        if self.display_information == None:
+        try:
+            self.display_information = self.display_information_service.display_information()
+        except ValueError:
             return
         
         self._format_lines()
