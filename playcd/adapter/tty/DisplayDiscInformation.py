@@ -5,7 +5,7 @@ import threading
 from playcd.domain.DisplayInformation import DisplayInformation
 from playcd.services.DisplayInformationService import DisplayInformationService
 from playcd.services.IsTtyValidService import IsTtyValidService
-from typing import List
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class DisplayDiscInformation:
 
@@ -26,12 +26,15 @@ class DisplayDiscInformation:
     def _format_lines(self) -> None:
         self.lines = []
 
-        disc_icon = self.display_information.disc.command().icon
+        disc_command : CDPlayerEnum = self.display_information.disc.command()
+        disc_icon = disc_command.icon
         tracks = self.display_information.disc.tracks()
         current_disc_time = self.display_information.disc.time.current()
         total_disc_time = self.display_information.disc.time.total()
 
-        track_icon = self.display_information.track.command().icon
+        track_command : CDPlayerEnum = self.display_information.track.command()
+
+        track_icon = track_command.icon
         track_number = self.display_information.track.track()
         current_track_time = self.display_information.track.time.current()
         total_track_time = self.display_information.track.time.total()
