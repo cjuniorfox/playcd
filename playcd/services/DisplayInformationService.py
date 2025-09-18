@@ -9,6 +9,7 @@ class DisplayInformationService:
     def __init__(self):
         self.logging = logging.getLogger(__name__)
         self.disc_information : DiscInformation = None
+        self.display_information: DisplayInformation = None
 
     def _sec_to_time(self, sector: int ,sector_start=0) -> Tuple[int,int]:
         sectors_per_second=75
