@@ -24,4 +24,4 @@ class PreparedPlayback:
         return self.tty_valid
     
     def __repr__(self):
-        return f"PreparedPlayback(cd={self.cd}, cdinfo={self.cdinfo}, display={self.display}, playlist={self.playlist}, tty_valid={self.tty_valid})"
+        return f"PreparedPlayback(cdinfo={self.cdinfo}, playlist={self.playlist}, tty_valid={self.tty_valid})"
