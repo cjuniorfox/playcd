@@ -53,7 +53,7 @@ class Core:
             cd_driver_service= self.cd_driver_service,
         )
 
-        self.api_listener = ApiListener("::",8001)
+        self.api_listener = ApiListener(self.command_queue_service,"::",8001)
         self.keyboard_listener = KeyboardListener(self.command_queue_service)
 
     def listeners(self):

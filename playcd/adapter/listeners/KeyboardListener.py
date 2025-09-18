@@ -53,8 +53,8 @@ class KeyboardListener:
                 key = self._getch()
                 command = self._key_to_command(key)
                 if command:
-                    self.command_queue_service.clear_commands()
-                    self.command_queue_service.add_command(command)
+                    self.command_queue_service.clear()
+                    self.command_queue_service.put(command)
                 time.sleep(0.2)
         except KeyboardInterrupt:
             self.stop()

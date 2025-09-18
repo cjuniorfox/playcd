@@ -34,20 +34,20 @@ class ApiListener:
     def _http_server(self) -> None:
         logger = logging.getLogger("")
         level_int = logger.getEffectiveLevel()
-        level_name = self._logging.getLevelName(level_int).lower()
-        uvicorn.run(self._app, host=self._host, port=self._port, log_level=level_name)
+        level_name = logging.getLevelName(level_int).lower()
+        uvicorn.run(self.app, host=self.host, port=self.port, log_level=level_name)
 
     def start(self) -> None:
         """Starts the listener thread"""
-        if self._is_running:
-            self._logging.warn("API Listener already running")
+        if self.is_running:
+            self.logging.warning("API Listener already running")
             return
-        self._is_running = True
-        self._listener_thread = threading.Thread(target=self._http_server,daemon=True)
-        self._listener_thread.start()
+        self.is_running = True
+        self.listener_thread = threading.Thread(target=self._http_server,daemon=True)
+        self.listener_thread.start()
 
     def stop(self) -> None:
         """Stops the listener"""
-        if self._is_running:
-            self._is_running = False
-            self._listener_thread.join(timeout=2)
+        if self.is_running:
+            self.is_running = False
+            self.listener_thread.join(timeout=2)
