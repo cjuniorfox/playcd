@@ -2,6 +2,7 @@ import logging
 from playcd.libs.KeyboardListener import KeyboardListener
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
+@DeprecationWarning
 class KeyboardListenerService:
     def __init__(self, logging: logging) -> None:
         self.logging = logging

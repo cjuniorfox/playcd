@@ -2,8 +2,7 @@ from playcd.domain.PreparedPlayback import PreparedPlayback
 from playcd.libs.CDPlayer import CDPlayer
 from playcd.services.ControlService import ControlService
 from playcd.services.DisplayService import DisplayService
-from playcd.services.StartApiListenerService import StartApiListenerService
-from playcd.services.KeyboardListenerService import KeyboardListenerService
+from playcd.services.CommandQueueService import CommandQueueService
 from playcd.services.CDDriverService import CDDriverService
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 import logging
@@ -12,25 +11,18 @@ from time import sleep
 class TrackService:
     def __init__(
             self, 
-            logging: logging,
-            api_listener_service: StartApiListenerService,
-            keyboard_listener_service: KeyboardListenerService,
+            command_queue_service: CommandQueueService,
             cd_driver_service: CDDriverService,
             control_service: ControlService,
             display_service: DisplayService
         ):
-        self.logging = logging
+        self.logging = logging.getLogger(__name__)
+        self.command_queue_service = command_queue_service
         self.cd_driver_service = cd_driver_service
-        self.api_listener_service = api_listener_service
-        self.keyboard_listener_service = keyboard_listener_service
         self.control_service = control_service
         self.display_service = display_service
 
-    def _get_command(self) -> CDPlayerEnum | None:
-        command = self.api_listener_service.get_api_listener().get_command()
-        if not command:
-            command = self.keyboard_listener_service.get_keyboard_listener().get_command()
-        return command
+   
 
     def play(self, preparedPlayback : PreparedPlayback, position: int) -> CDPlayerEnum | None:
         
@@ -44,7 +36,7 @@ class TrackService:
 
         while cd_player.is_playing():
             
-            command = self._get_command()
+            command = self.command_queue_service.get()
 
             self.control_service.control_cdplayer(command, cd_player)
             
