@@ -21,7 +21,7 @@ class DisplayInformationService:
         minutes, secs = times
         return f"{minutes:02}:{secs:02}"
 
-    def disc_information(self,disc_information: DiscInformation) -> None:
+    def set_disc_information(self,disc_information: DiscInformation) -> None:
         self.disc_information = disc_information
 
     def update(self,lsn: int, command: CDPlayerEnum) -> None:
