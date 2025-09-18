@@ -41,7 +41,7 @@ class DisplayDiscInformation:
 
     def print(self) -> None:
         try:
-            self.display_information = self.display_information_service.display_information()
+            self.display_information = self.display_information_service.get()
         except ValueError:
             return
         
