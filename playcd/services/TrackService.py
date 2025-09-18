@@ -30,9 +30,9 @@ class TrackService:
         else:
             return cd_player.get_lsn(), CDPlayerEnum.PLAY
 
-    def play(self, preparedPlayback : PreparedPlayback, position: int) -> CDPlayerEnum | None:
+    def play(self, prepared_playback : PreparedPlayback, position: int) -> CDPlayerEnum | None:
         
-        track = preparedPlayback.get_playlist()[position]
+        track = prepared_playback.get_playlist()[position]
 
         self.logging.info("Starting playback of the track: %s", track.get_number())
         self.logging.info("Playing CD from %s with length of %s sectors.", track.get_start_lsn(), track.get_length())
@@ -40,7 +40,7 @@ class TrackService:
         cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
         cd_player.start(track.get_start_lsn(), track.get_length()) 
 
-        self.display_information_service.disc_information(preparedPlayback.get_cdinfo())
+        self.display_information_service.disc_information(prepared_playback.get_cdinfo())
 
         while cd_player.is_playing():
             
