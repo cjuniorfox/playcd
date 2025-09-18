@@ -58,7 +58,7 @@ class DisplayDiscInformation:
     def listener(self):
         """Core Listener"""
         while self.running:
-            print()
+            self.print()
             time.sleep(0.5)
 
     def start(self):
