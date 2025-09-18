@@ -3,13 +3,13 @@ from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class BaseDisc:
 
+    def __init__(self, command: CDPlayerEnum, time: "DisplayInformation.Time"):
+        self._command = command
+        self._time = time
+
     @property
     def command(self) -> CDPlayerEnum:
         return self._command
-
-    @property
-    def icon(self) -> str:
-        return self._icon
 
     @property
     def time(self) -> "DisplayInformation.Time":
