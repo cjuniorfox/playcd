@@ -1,9 +1,9 @@
 from playcd.domain.PreparedPlayback import PreparedPlayback
 from playcd.libs.CDPlayer import CDPlayer
 from playcd.services.ControlService import ControlService
-from playcd.services.DisplayService import DisplayService
 from playcd.services.CommandQueueService import CommandQueueService
 from playcd.services.CDDriverService import CDDriverService
+from playcd.services.DisplayInformationService import DisplayInformationService
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 import logging
 from time import sleep
@@ -14,15 +14,21 @@ class TrackService:
             command_queue_service: CommandQueueService,
             cd_driver_service: CDDriverService,
             control_service: ControlService,
-            display_service: DisplayService
+            display_information_service: DisplayInformationService
         ):
         self.logging = logging.getLogger(__name__)
         self.command_queue_service = command_queue_service
         self.cd_driver_service = cd_driver_service
         self.control_service = control_service
-        self.display_service = display_service
+        self.display_information_service = display_information_service
 
-   
+    def _display_info_from_cdplayer(self, cd_player: CDPlayer) -> tuple[int, CDPlayerEnum]:
+        if cd_player.is_paused():
+            return cd_player.get_lsn(), CDPlayerEnum.PAUSE
+        elif cd_player.is_stopped():
+            return 0, CDPlayerEnum.STOP
+        else:
+            return cd_player.get_lsn(), CDPlayerEnum.PLAY
 
     def play(self, preparedPlayback : PreparedPlayback, position: int) -> CDPlayerEnum | None:
         
@@ -39,12 +45,10 @@ class TrackService:
             command = self.command_queue_service.get()
 
             self.control_service.control_cdplayer(command, cd_player)
-            
-            self.display_service.write_screen(
-                command,
-                cd_player, 
-                preparedPlayback.is_tty_valid()
-            )
+
+            print_lsn, print_command = self._display_info_from_cdplayer(cd_player)
+
+            self.display_information_service.update(print_lsn, command if command != None else print_command)
 
             if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
                 self.logging.debug("TrackService: Received command to go to the %s track.", command)

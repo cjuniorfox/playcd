@@ -6,8 +6,6 @@ from playcd.services.IsTtyValidService import IsTtyValidService
 from playcd.services.PlayService import PlayService
 from playcd.domain.InputParams import InputParams
 from playcd.domain.PreparedPlayback import PreparedPlayback
-from playcd.libs.CDDisplay import CDDisplay
-from playcd.services.DisplayService import DisplayService
 
 
 class MainUC:
@@ -15,30 +13,24 @@ class MainUC:
 
     def __init__(
             self,
-            logging: logging,
             cd_driver_service: CDDriverService,
             cd_info_service: CDInfoService,
             create_playlist_service: CreatePlaylistService,
             is_tty_valid_service: IsTtyValidService,
-            play_service: PlayService,
-            display_service: DisplayService
+            play_service: PlayService
         ):
-        self.logging = logging
+        self.logging = logging.getLogger(__name__)
         self.cd_driver_service = cd_driver_service
         self.cd_info_service = cd_info_service
         self.create_playlist_service = create_playlist_service
         self.is_tty_valid_service = is_tty_valid_service
         self.play_service = play_service
-        self.display_service = display_service
 
     def execute(self,params : InputParams):
         self.cd = self.cd_driver_service.open_cd()
         cdinfo = self.cd_info_service.get_cd_info(self.cd)
         playlist = self.create_playlist_service.create(cdinfo,params)
-        self.display_service.set_cd_info(cdinfo)
         tty_valid = self.is_tty_valid_service.execute()
-        #self.keyboard_listener_service.print_keyboard_commands(tty_valid)
-
 
         preparedPlayback = PreparedPlayback(
             cdinfo= cdinfo,
