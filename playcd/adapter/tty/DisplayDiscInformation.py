@@ -34,8 +34,7 @@ class DisplayDiscInformation:
         current_disc_time = self.display_information.disc.time.current
         total_disc_time = self.display_information.disc.time.total
 
-        track_command : CDPlayerEnum = self.display_information.track
-
+        track_command : CDPlayerEnum = self.display_information.track.command
         track_icon = track_command.icon
         track_number = self.display_information.track.track
         current_track_time = self.display_information.track.time.current
