@@ -28,7 +28,7 @@ class DisplayInformationService:
         self.disc_information = disc_information
 
     def put(self,lsn: int, command: CDPlayerEnum) -> None:
-        self.last_cdplayer_status = {lsn, command}
+        self.last_cdplayer_status = {"lsn": lsn, "command": command}
         self.cdplayer_status.put(self.last_cdplayer_status)
         
     def get_cdplayer_status(self) -> Tuple[str,CDPlayerEnum] | None:

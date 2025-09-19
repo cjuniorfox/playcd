@@ -51,12 +51,12 @@ class DisplayDiscInformation:
 
     def print_data(self) -> None:
         try:
-            lsn, command = self.display_information_service.get_cdplayer_status()
+            information = self.display_information_service.get_cdplayer_status()
             disc_information = self.display_information_service.get_disc_information()
-            display_information = DisplayInformationMapper.map(lsn, command, disc_information)
-            lines = self._format_lines(display_information)
 
-        except ValueError:
+            display_information = DisplayInformationMapper.map(information["lsn"], information["command"], disc_information)
+            lines = self._format_lines(display_information)
+        except TypeError:
             return
 
         car_ret = "\033[F" #\033F return the carriage to the beginning of the previous line

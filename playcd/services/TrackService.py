@@ -61,6 +61,6 @@ class TrackService:
             elif command == CDPlayerEnum.QUIT:
                 self.logging.info("Quitting playback as per user request.")
                 raise KeyboardInterrupt
-            sleep(0.1)
+            sleep(0.5)
 
         self.logging.info("Playback finished.")
