@@ -142,31 +142,6 @@ You can integrate this into scripts or other applications.
 
 ---
 
-## 🐍 Embedding in Python
-
-You can use the **listeners** directly in your own Python applications.
-
-### Keyboard listener
-
-```python
-import logging
-from playcd.keyboard_listener import KeyboardListener
-
-logging.basicConfig(level=logging.INFO)
-listener = KeyboardListener(logging)
-
-listener.start()
-
-print("Press keys (w/s/a/d/space)...")
-while True:
-    cmd = listener.get_command()
-    if cmd:
-        print("Received command:", cmd)
-        if cmd == "quit":
-            listener.stop()
-            break
-```
-
 ## 🛠 Development
 
 Clone the repo and install in editable mode:
@@ -177,6 +152,16 @@ cd playcd
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
+```
+
+### NixOS
+
+With NixOS, it's easy to develop for, by doing as follows:
+
+```bash
+ nix-shell -p python3 python3Packages.virtualenv portaudio pkg-config
+ source ~/.venv/playcd/bin/activate
+ export LD_LIBRARY_PATH=/run/current-system/sw/lib:$LD_LIBRARY_PATH
 ```
 
 ---
