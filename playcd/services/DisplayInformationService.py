@@ -25,6 +25,9 @@ class DisplayInformationService:
     def set_disc_information(self,disc_information: DiscInformation) -> None:
         self.disc_information = disc_information
 
+    def clear(self):
+        self.display_information = None
+
     def update(self,lsn: int, command: CDPlayerEnum) -> None:
         if self.disc_information == None:
             raise ValueError("disc_information cannot be null. Set disc_information first")

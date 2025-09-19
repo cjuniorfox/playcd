@@ -2,6 +2,7 @@ import logging
 import sys
 import time
 import threading
+import shutil
 from playcd.domain.DisplayInformation import DisplayInformation
 from playcd.services.DisplayInformationService import DisplayInformationService
 from playcd.services.IsTtyValidService import IsTtyValidService
@@ -22,30 +23,34 @@ class DisplayDiscInformation:
         self.lines = None
         self.display_information : DisplayInformation = None
         self.running = False
+        self.printed = False
 
     def _format_lines(self) -> None:
         self.lines = []
 
-        disc_command : CDPlayerEnum = self.display_information.disc.command()
+        disc_command : CDPlayerEnum = self.display_information.disc.command
         disc_icon = disc_command.icon
-        tracks = self.display_information.disc.tracks()
-        current_disc_time = self.display_information.disc.time.current()
-        total_disc_time = self.display_information.disc.time.total()
+        tracks = self.display_information.disc.tracks
+        current_disc_time = self.display_information.disc.time.current
+        total_disc_time = self.display_information.disc.time.total
 
-        track_command : CDPlayerEnum = self.display_information.track.command()
+        track_command : CDPlayerEnum = self.display_information.track
 
         track_icon = track_command.icon
-        track_number = self.display_information.track.track()
-        current_track_time = self.display_information.track.time.current()
-        total_track_time = self.display_information.track.time.total()
+        track_number = self.display_information.track.track
+        current_track_time = self.display_information.track.time.current
+        total_track_time = self.display_information.track.time.total
 
         self.lines.append(f"{disc_icon} {tracks:2} {current_disc_time} / {total_disc_time}")
         self.lines.append(f"{track_icon} {track_number:2} {current_track_time} / {total_track_time}")
 
-    def print(self) -> None:
+    def print_data(self) -> None:
         try:
             self.display_information = self.display_information_service.get()
         except ValueError:
+            """If printed data previously, if there's nothing to print, clear the buffer"""
+            if self.printed:
+                self.clear_buffer()
             return
         
         self._format_lines()
@@ -57,11 +62,17 @@ class DisplayDiscInformation:
         data = "\n".join(["\r"+l for l in self.lines])
         printable_text = car_ret+data
         print(printable_text, flush=True, end="", file=sys.stderr)
+        self.printed = True
+
+    def clear_buffer():
+        columns = shutil.get_terminal_size((80, 20)).columns
+        padded_text = "".ljust(columns)
+        print("\033[F"+padded_text+"\r"+padded_text+"\033[F", end="", file=sys.stderr)
 
     def listener(self):
         """Core Listener"""
         while self.running:
-            self.print()
+            self.print_data()
             time.sleep(0.5)
 
     def start(self):

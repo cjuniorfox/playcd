@@ -61,8 +61,10 @@ class TrackService:
                     cd_player.close()
                     return command
             elif command == CDPlayerEnum.QUIT:
+                self.display_information_service.clear()
                 self.logging.info("Quitting playback as per user request.")
                 raise KeyboardInterrupt
             sleep(0.1)
 
         self.logging.info("Playback finished.")
+        self.display_information_service.clear()
