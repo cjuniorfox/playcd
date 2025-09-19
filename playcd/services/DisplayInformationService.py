@@ -1,6 +1,5 @@
 import logging
 from playcd.domain.DiscInformation import DiscInformation
-from playcd.domain.adapter.DisplayInformation import DisplayInformation
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 from typing import Tuple
 import queue
