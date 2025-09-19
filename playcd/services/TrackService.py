@@ -36,14 +36,14 @@ class TrackService:
 
         self.logging.info("Starting playback of the track: %s", track.get_number())
         self.logging.info("Playing CD from %s with length of %s sectors.", track.get_start_lsn(), track.get_length())
-        
+
         cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
         cd_player.start(track.get_start_lsn(), track.get_length()) 
 
         self.display_information_service.set_disc_information(prepared_playback.get_cdinfo())
 
         while cd_player.is_playing():
-            
+
             command = self.command_queue_service.get()
 
             self.control_service.control_cdplayer(command, cd_player)
@@ -53,6 +53,7 @@ class TrackService:
             self.display_information_service.update(print_lsn, command if command != None else print_command)
 
             if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
+                self.display_information_service.clear()
                 self.logging.debug("TrackService: Received command to go to the %s track.", command)
                 if command == CDPlayerEnum.PREV and cd_player.get_lsn() - track.get_start_lsn() > 150:
                     cd_player.jump(track.get_start_lsn())
