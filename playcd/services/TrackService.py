@@ -53,7 +53,6 @@ class TrackService:
             self.display_information_service.update(print_lsn, command if command != None else print_command)
 
             if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
-                self.display_information_service.clear()
                 self.logging.debug("TrackService: Received command to go to the %s track.", command)
                 if command == CDPlayerEnum.PREV and cd_player.get_lsn() - track.get_start_lsn() > 150:
                     cd_player.jump(track.get_start_lsn())
@@ -62,10 +61,8 @@ class TrackService:
                     cd_player.close()
                     return command
             elif command == CDPlayerEnum.QUIT:
-                self.display_information_service.clear()
                 self.logging.info("Quitting playback as per user request.")
                 raise KeyboardInterrupt
             sleep(0.1)
 
         self.logging.info("Playback finished.")
-        self.display_information_service.clear()

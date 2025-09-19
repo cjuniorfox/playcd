@@ -22,6 +22,7 @@ class DisplayDiscInformation:
         self.is_tty_valid_service = is_tty_valid_service
         self.lines = None
         self.display_information : DisplayInformation = None
+        self.printable_text = None
         self.running = False
 
     def _format_lines(self) -> None:
@@ -56,7 +57,9 @@ class DisplayDiscInformation:
         car_ret = "\033[F" #\033F return the carriage to the beginning of the previous line
         data = "\n".join(["\r"+l for l in self.lines])
         printable_text = car_ret+data
-        print(printable_text, flush=True, end="", file=sys.stderr)
+        if self.printable_text != printable_text:
+            self.printable_text = printable_text
+            print(printable_text, flush=True, end="", file=sys.stderr)
 
     def listener(self):
         """Core Listener"""
