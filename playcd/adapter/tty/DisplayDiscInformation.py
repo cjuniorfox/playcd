@@ -23,7 +23,6 @@ class DisplayDiscInformation:
         self.lines = None
         self.display_information : DisplayInformation = None
         self.running = False
-        self.printed = False
 
     def _format_lines(self) -> None:
         self.lines = []
@@ -47,9 +46,6 @@ class DisplayDiscInformation:
         try:
             self.display_information = self.display_information_service.get()
         except ValueError:
-            """If printed data previously, if there's nothing to print, clear the buffer"""
-            if self.printed:
-                self.clear_buffer()
             return
         
         self._format_lines()
@@ -61,12 +57,6 @@ class DisplayDiscInformation:
         data = "\n".join(["\r"+l for l in self.lines])
         printable_text = car_ret+data
         print(printable_text, flush=True, end="", file=sys.stderr)
-        self.printed = True
-
-    def clear_buffer(self):
-        columns = shutil.get_terminal_size((80, 20)).columns
-        padded_text = "".ljust(columns)
-        print("\033[F"+padded_text+"\r"+padded_text+"\033[F", end="", file=sys.stderr)
 
     def listener(self):
         """Core Listener"""
@@ -95,4 +85,4 @@ class DisplayDiscInformation:
             return
         self.running = False
         self.listener_thread.join(timeout=2)
-        
+
