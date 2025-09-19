@@ -63,7 +63,7 @@ class DisplayDiscInformation:
         print(printable_text, flush=True, end="", file=sys.stderr)
         self.printed = True
 
-    def clear_buffer():
+    def clear_buffer(self):
         columns = shutil.get_terminal_size((80, 20)).columns
         padded_text = "".ljust(columns)
         print("\033[F"+padded_text+"\r"+padded_text+"\033[F", end="", file=sys.stderr)
