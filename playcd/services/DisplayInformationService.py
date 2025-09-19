@@ -1,15 +1,17 @@
 import logging
 from playcd.domain.DiscInformation import DiscInformation
-from playcd.domain.DisplayInformation import DisplayInformation
+from playcd.domain.adapter.DisplayInformation import DisplayInformation
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 from typing import Tuple
+import queue
 
 class DisplayInformationService:
     
     def __init__(self):
         self.logging = logging.getLogger(__name__)
-        self.disc_information : DiscInformation = None
-        self.display_information: DisplayInformation = None
+        self.disc_information: DiscInformation = None
+        self.cdplayer_status = queue.Queue()
+        self.last_cdplayer_status : Tuple[int,CDPlayerEnum] = None
 
     def _sec_to_time(self, sector: int ,sector_start=0) -> Tuple[int,int]:
         sectors_per_second=75
@@ -22,39 +24,22 @@ class DisplayInformationService:
         minutes, secs = times
         return f"{minutes:02}:{secs:02}"
 
-    def set_disc_information(self,disc_information: DiscInformation) -> None:
+    def define_disc_information(self,disc_information: DiscInformation) -> None:
         self.disc_information = disc_information
 
-    def update(self,lsn: int, command: CDPlayerEnum) -> None:
-        if self.disc_information == None:
-            raise ValueError("disc_information cannot be null. Set disc_information first")
+    def put(self,lsn: int, command: CDPlayerEnum) -> None:
+        self.last_cdplayer_status = {lsn, command}
+        self.cdplayer_status.put(self.last_cdplayer_status)
         
-        track = [ 
-            t for t in self.disc_information.get_tracks() 
-            if (t.get_start_lsn() <= lsn and t.get_end_lsn() >= lsn )
-        ] [0]
+    def get_cdplayer_status(self) -> Tuple[str,CDPlayerEnum] | None:
+        try:
+            cdplayer_status = self.cdplayer_status.get_nowait()
+            return cdplayer_status
+        except queue.Empty:
+            return None
         
-        self.display_information = DisplayInformation(
-            DisplayInformation.Disc(
-                command=CDPlayerEnum.DISC,
-                time=DisplayInformation.Time(
-                    current=self._format_time(self._sec_to_time(lsn)),
-                    total=self._format_time(self._sec_to_time(self.disc_information.get_total()))
-                ),
-                tracks= len(self.disc_information.get_tracks())
-            ),
-            DisplayInformation.Track(
-                command=command,
-                time=DisplayInformation.Time(
-                    current=self._format_time(self._sec_to_time(lsn,track.get_start_lsn())),
-                    total=self._format_time(self._sec_to_time(track.get_length()))
-                ),
-                track=track.get_number()
-            )
-        )
-
-    def get(self) -> DisplayInformation:
-        if self.display_information == None:
-            raise ValueError("display_information cannot be null. Set update first")
-        return self.display_information
-        
+    def get_disc_information(self):
+        return self.disc_information
+    
+    def get_last_cdplayer_status(self):
+        return self.last_cdplayer_status

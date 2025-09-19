@@ -40,17 +40,15 @@ class TrackService:
         cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
         cd_player.start(track.get_start_lsn(), track.get_length()) 
 
-        self.display_information_service.set_disc_information(prepared_playback.get_cdinfo())
+        self.display_information_service.define_disc_information(prepared_playback.get_cdinfo())
 
         while cd_player.is_playing():
 
             command = self.command_queue_service.get()
-
             self.control_service.control_cdplayer(command, cd_player)
 
             print_lsn, print_command = self._display_info_from_cdplayer(cd_player)
-
-            self.display_information_service.update(print_lsn, command if command != None else print_command)
+            self.display_information_service.put(print_lsn, command if command != None else print_command)
 
             if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
                 self.logging.debug("TrackService: Received command to go to the %s track.", command)
