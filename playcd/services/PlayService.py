@@ -1,5 +1,6 @@
 import logging
-from playcd.domain.PreparedPlayback import PreparedPlayback
+from typing import List
+from playcd.domain.Track import Track
 from playcd.services.TrackService import TrackService
 from playcd.domain.RepeatEnum import RepeatEnum
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
@@ -9,13 +10,12 @@ class PlayService:
         self.logging = logging
         self.track_service = track_service
 
-    def play(self, preparedPlayback: PreparedPlayback, repeat: RepeatEnum, shuffle: bool):
+    def play(self, playlist: List[Track], repeat: RepeatEnum, shuffle: bool):
         self.logging.info("Starting playback with repeat=%s and shuffle=%s", repeat, shuffle)
-        playlist = preparedPlayback.get_playlist()
         position = 0
 
         while position < len(playlist):
-            command = self.track_service.play(preparedPlayback, position)
+            command = self.track_service.play(playlist, position)
             if command == CDPlayerEnum.NEXT:
                 position += 1
             elif command == CDPlayerEnum.PREV:

@@ -3,22 +3,21 @@ import sys
 import time
 import threading
 from typing import List, Tuple
-from playcd.domain.adapter.DisplayInformation import DisplayInformation
-from playcd.services.DisplayInformationService import DisplayInformationService
+from playcd.domain.DisplayInformation import DisplayInformation
+from playcd.services.ReadStatusService import ReadStatusService
 from playcd.services.IsTtyValidService import IsTtyValidService
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
-from playcd.domain.mapper.DisplayInformationMapper import DisplayInformationMapper
-from playcd.domain.adapter.DisplayInformation import DisplayInformation
+from playcd.domain.DisplayInformation import DisplayInformation
 
-class DisplayDiscInformation:
+class DisplayDiscInformationTty:
 
     def __init__(
             self, 
-            display_information_service: DisplayInformationService, 
+            read_status_service: ReadStatusService, 
             is_tty_valid_service: IsTtyValidService
         ):
         self.logging = logging.getLogger(__name__)
-        self.display_information_service = display_information_service
+        self.read_status_service = read_status_service
         self.is_tty_valid_service = is_tty_valid_service
         self.running = False
 
@@ -51,10 +50,7 @@ class DisplayDiscInformation:
 
     def print_data(self) -> None:
         try:
-            information = self.display_information_service.get_cdplayer_status()
-            disc_information = self.display_information_service.get_disc_information()
-
-            display_information = DisplayInformationMapper.map(information["lsn"], information["command"], disc_information)
+            display_information = self.read_status_service.execute()
             lines = self._format_lines(display_information)
         except TypeError:
             return

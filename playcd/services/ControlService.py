@@ -6,7 +6,7 @@ class ControlService:
     def __init__(self, logging):
         self.logging = logging
 
-    def control_cdplayer(self, command: str, cd_player: CDPlayer):
+    def execute(self, command: str, cd_player: CDPlayer):
         if command:
             if command == CDPlayerEnum.PAUSE:
                 cd_player.pause()

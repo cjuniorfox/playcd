@@ -2,7 +2,7 @@ from playcd.domain.CDPlayerEnum import CDPlayerEnum
 import queue
 import logging
 
-class CommandQueueService:
+class CommandRepository:
 
     def __init__(self):
         self.logging = logging.getLogger(__name__)

@@ -5,23 +5,26 @@ from typing import List
 class PreparedPlayback:
     def __init__(
             self, 
-            cdinfo: DiscInformation, 
+            disc_information: DiscInformation, 
             playlist: List[Track], 
             tty_valid: bool = False
         ):
-        self.cdinfo = cdinfo
-        self.playlist = playlist
-        self.tty_valid = tty_valid
+        self._disc_information = disc_information
+        self._playlist = playlist
+        self._tty_valid = tty_valid
 
     
-    def get_cdinfo(self) -> DiscInformation:
-        return self.cdinfo
+    @property
+    def disc_information(self) -> DiscInformation:
+        return self._disc_information
     
-    def get_playlist(self) -> List[Track]:
-        return self.playlist
+    @property
+    def playlist(self) -> List[Track]:
+        return self._playlist
     
-    def is_tty_valid(self) -> bool:
-        return self.tty_valid
+    @property
+    def tty_valid(self) -> bool:
+        return self._tty_valid
     
     def __repr__(self):
-        return f"PreparedPlayback(cdinfo={self.cdinfo}, playlist={self.playlist}, tty_valid={self.tty_valid})"
+        return f"PreparedPlayback(disc_information={self._disc_information}, playlist={self._playlist}, tty_valid={self._tty_valid})"

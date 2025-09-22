@@ -2,11 +2,11 @@ from fastapi import FastAPI, Response, status
 import uvicorn
 import logging
 import threading
-from playcd.services.CommandQueueService import CommandQueueService
+from playcd.adapter.repository.CommandRepository import CommandRepository
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class ApiListener:
-    def __init__(self, command_queue_service: CommandQueueService, host: str, port: int):
+    def __init__(self, command_queue_service: CommandRepository, host: str, port: int):
         self.command_queue_service = command_queue_service
         self.host = host
         self.port = port

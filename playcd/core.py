@@ -5,18 +5,22 @@ from playcd.usecases.CloseApplicationUC import CloseApplicationUC
 from playcd.domain.RepeatEnum import RepeatEnum
 
 from playcd.services.CDDriverService import CDDriverService
-from playcd.services.CDInfoService import CDInfoService
+from playcd.services.RegisterDiscInformationService import RegisterDiscInformationService
+from playcd.services.ReadDiscInformationService import ReadDiscInformationService
 from playcd.services.CreatePlaylistService import CreatePlaylistService
 from playcd.services.IsTtyValidService import IsTtyValidService
 from playcd.services.PlayService import PlayService
 from playcd.services.TrackService import TrackService
 from playcd.services.ControlService import ControlService
-from playcd.services.CommandQueueService import CommandQueueService
-from playcd.services.DisplayInformationService import DisplayInformationService
+from playcd.adapter.repository.CommandRepository import CommandRepository
+from playcd.services.RegisterStatusService import RegisterStatusService
 from playcd.adapter.listeners.ApiListener import ApiListener
 from playcd.adapter.listeners.KeyboardListener import KeyboardListener
 from playcd.adapter.tty.KeyboardCommands import KeyboardCommands
-from playcd.adapter.tty.DisplayDiscInformation import DisplayDiscInformation
+from playcd.adapter.tty.DisplayDiscInformationTty import DisplayDiscInformationTty
+from playcd.adapter.repository.DiscInformationRepository import DiscInformationRepository
+from playcd.adapter.repository.DisplayInformationRepository import DisplayInformationRepository
+from playcd.services.ReadStatusService import ReadStatusService
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,24 +29,29 @@ logging.basicConfig(
 
 class Core:
     def __init__(self):
-        self.command_queue_service = CommandQueueService()
+        self.disc_information_repository = DiscInformationRepository()
+        self.display_information_repository = DisplayInformationRepository()
+        self.command_repository = CommandRepository()
         self.cd_driver_service = CDDriverService(logging)
-        self.cd_info_service = CDInfoService(logging)
+        self.register_disc_information_service = RegisterDiscInformationService(self.disc_information_repository)
+        self.read_disc_information_service = ReadDiscInformationService(self.disc_information_repository)
         self.create_playlist_service = CreatePlaylistService(logging)
         self.is_tty_valid_service = IsTtyValidService(logging)
         self.control_service = ControlService(logging)
-        self.display_information_service = DisplayInformationService()
+        self.register_status_service = RegisterStatusService(self.display_information_repository)
+        self.read_status_service = ReadStatusService(self.disc_information_repository)
         self.track_service = TrackService(
-            command_queue_service= self.command_queue_service,
+            command_repository= self.command_repository,
             cd_driver_service= self.cd_driver_service,
             control_service= self.control_service,
-            display_information_service= self.display_information_service
+            register_status_service= self.register_status_service,
+            read_disc_information_service=self.read_disc_information_service
         )
         self.play_service = PlayService(logging, self.track_service)
 
         self.main_uc = MainUC(
             cd_driver_service= self.cd_driver_service,
-            cd_info_service= self.cd_info_service,
+            register_disc_information_service= self.register_disc_information_service,
             create_playlist_service= self.create_playlist_service,
             is_tty_valid_service= self.is_tty_valid_service,
             play_service= self.play_service,
@@ -53,10 +62,10 @@ class Core:
             cd_driver_service= self.cd_driver_service,
         )
 
-        self.api_listener = ApiListener(self.command_queue_service,"::",8001)
-        self.keyboard_listener = KeyboardListener(self.command_queue_service)
+        self.api_listener = ApiListener(self.command_repository,"::",8001)
+        self.keyboard_listener = KeyboardListener(self.command_repository)
         self.keyboard_commands = KeyboardCommands(self.is_tty_valid_service)
-        self.display_disc_information = DisplayDiscInformation(self.display_information_service, self.is_tty_valid_service)
+        self.display_disc_information = DisplayDiscInformationTty(self.read_status_service, self.is_tty_valid_service)
 
     def listeners(self):
         self.keyboard_listener.start()
