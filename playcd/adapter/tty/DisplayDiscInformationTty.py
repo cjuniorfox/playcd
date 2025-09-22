@@ -8,6 +8,7 @@ from playcd.services.ReadStatusService import ReadStatusService
 from playcd.services.IsTtyValidService import IsTtyValidService
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 from playcd.domain.DisplayInformation import DisplayInformation
+from playcd.domain.exceptions.ValueNotFoundError import ValueNotFoundError
 
 class DisplayDiscInformationTty:
 
@@ -52,7 +53,8 @@ class DisplayDiscInformationTty:
         try:
             display_information = self.read_status_service.execute()
             lines = self._format_lines(display_information)
-        except TypeError:
+        except ValueNotFoundError as e:
+            self.logging.debug("Theres no data to be retrieved as display_information %s", e.errors )
             return
 
         car_ret = "\033[F" #\033F return the carriage to the beginning of the previous line

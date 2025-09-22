@@ -1,5 +1,6 @@
 import logging
 from playcd.domain.DiscInformation import DiscInformation
+from playcd.domain.exceptions.ValueNotFoundError import ValueNotFoundError
 
 class DiscInformationRepository:
     def __init__(self):
@@ -15,4 +16,6 @@ class DiscInformationRepository:
 
     def get(self) -> DiscInformation:
         self.logging.debug("Retrieving disc information %s", self.disc_information)
+        if self.display_information == None:
+            raise ValueNotFoundError("The DisplayInformation is was set yet","DisplayInformationRepository.display_information is None")
         return self.disc_information

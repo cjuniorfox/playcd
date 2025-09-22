@@ -21,6 +21,9 @@ from playcd.adapter.tty.DisplayDiscInformationTty import DisplayDiscInformationT
 from playcd.adapter.repository.DiscInformationRepository import DiscInformationRepository
 from playcd.adapter.repository.DisplayInformationRepository import DisplayInformationRepository
 from playcd.services.ReadStatusService import ReadStatusService
+from playcd.services.ReadCommandService import ReadCommandService
+from playcd.services.RegisterCommandService import RegisterCommandService
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,8 +43,11 @@ class Core:
         self.control_service = ControlService(logging)
         self.register_status_service = RegisterStatusService(self.display_information_repository)
         self.read_status_service = ReadStatusService(self.display_information_repository)
+        self.register_command_service = RegisterCommandService(self.command_repository)
+        self.read_command_service = ReadCommandService(self.command_repository)
+
         self.track_service = TrackService(
-            command_repository= self.command_repository,
+            read_command_service= self.read_command_service,
             cd_driver_service= self.cd_driver_service,
             control_service= self.control_service,
             register_status_service= self.register_status_service,
@@ -62,8 +68,8 @@ class Core:
             cd_driver_service= self.cd_driver_service,
         )
 
-        self.api_listener = ApiListener(self.command_repository,"::",8001)
-        self.keyboard_listener = KeyboardListener(self.command_repository)
+        self.api_listener = ApiListener(self.register_command_service,"::",8001)
+        self.keyboard_listener = KeyboardListener(self.register_command_service)
         self.keyboard_commands = KeyboardCommands(self.is_tty_valid_service)
         self.display_disc_information = DisplayDiscInformationTty(self.read_status_service, self.is_tty_valid_service)
 

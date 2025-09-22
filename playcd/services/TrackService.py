@@ -1,7 +1,7 @@
 from playcd.domain.Track import Track
 from playcd.libs.CDPlayer import CDPlayer
 from playcd.services.ControlService import ControlService
-from playcd.adapter.repository.CommandRepository import CommandRepository
+from playcd.services.ReadCommandService import ReadCommandService
 from playcd.services.CDDriverService import CDDriverService
 from playcd.services.RegisterStatusService import RegisterStatusService
 from playcd.services.ReadDiscInformationService import ReadDiscInformationService
@@ -14,14 +14,14 @@ from time import sleep
 class TrackService:
     def __init__(
             self, 
-            command_repository: CommandRepository,
+            read_command_service: ReadCommandService,
             cd_driver_service: CDDriverService,
             control_service: ControlService,
             register_status_service: RegisterStatusService,
             read_disc_information_service: ReadDiscInformationService
         ):
         self.logging = logging.getLogger(__name__)
-        self.command_queue_service = command_repository
+        self.read_command_service = read_command_service
         self.cd_driver_service = cd_driver_service
         self.control_service = control_service
         self.register_status_service = register_status_service
@@ -34,7 +34,7 @@ class TrackService:
             return 0, CDPlayerEnum.STOP
         else:
             return cd_player.get_lsn(), CDPlayerEnum.PLAY
-
+        
     def play(self, playlist : List[Track], position: int) -> CDPlayerEnum | None:
         
         track = playlist[position]
@@ -49,10 +49,8 @@ class TrackService:
 
         while cd_player.is_playing():
 
-            command = self.command_queue_service.get()
-
+            command = self.read_command_service.execute()
             self.control_service.execute(command, cd_player)
-
             print_lsn, print_command = self._display_info_from_cdplayer(cd_player)
 
             self.register_status_service.execute(

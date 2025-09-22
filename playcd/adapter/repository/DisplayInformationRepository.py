@@ -1,5 +1,6 @@
 import logging
 from playcd.domain.DisplayInformation import DisplayInformation
+from playcd.domain.exceptions.ValueNotFoundError import ValueNotFoundError
 
 class DisplayInformationRepository:
 
@@ -16,4 +17,6 @@ class DisplayInformationRepository:
     
     def get(self) -> DisplayInformation:
         self.logging.debug("Retrieveing display information: %s", self.display_information)
+        if self.display_information == None:
+            raise ValueNotFoundError("The DisplayInformation is was set yet","DisplayInformationRepository.display_information is None")
         return self.display_information

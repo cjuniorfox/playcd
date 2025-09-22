@@ -2,12 +2,12 @@ from fastapi import FastAPI, Response, status
 import uvicorn
 import logging
 import threading
-from playcd.adapter.repository.CommandRepository import CommandRepository
+from playcd.services.RegisterCommandService import RegisterCommandService
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class ApiListener:
-    def __init__(self, command_queue_service: CommandRepository, host: str, port: int):
-        self.command_queue_service = command_queue_service
+    def __init__(self, register_command_service: RegisterCommandService, host: str, port: int):
+        self.register_command_service = register_command_service
         self.host = host
         self.port = port
         self.logging = logging.getLogger(__name__)
@@ -19,8 +19,8 @@ class ApiListener:
         @self.app.post("/command/{command}")
         def send(command:str, response: Response) -> dict[str,str]:
             try:
-                self.command_queue_service.clear()
-                self.command_queue_service.put(CDPlayerEnum.from_command(command))
+                self.register_command_service.clear()
+                self.register_command_service.put(CDPlayerEnum.from_command(command))
                 return { "status" : "queued", "command": command }
             except ValueError:
                 return { "status": "invalid", "command": command }
