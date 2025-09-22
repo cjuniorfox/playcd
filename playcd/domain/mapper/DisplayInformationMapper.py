@@ -1,9 +1,10 @@
-from playcd.domain.adapter.DisplayInformation import DisplayInformation
+from playcd.domain.DisplayInformation import DisplayInformation
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
+from playcd.domain.DiscInformation import DiscInformation
 
 class DisplayInformationMapper:
     @staticmethod
-    def map(lsn: int, command: CDPlayerEnum, disc_information) -> DisplayInformation:
+    def map(lsn: int, command: CDPlayerEnum, disc_information: DiscInformation) -> DisplayInformation:
         track = [
             t for t in disc_information.get_tracks()
             if (t.get_start_lsn() <= lsn and t.get_end_lsn() >= lsn)
