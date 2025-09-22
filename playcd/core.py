@@ -78,8 +78,9 @@ def main(log_level, shuffle, repeatStr, only_track, track_number = 1):
     except KeyboardInterrupt:
         logging.info("Keyboard Interrupt detected! Stopping the execution!")
     finally:
-        print("\nClosing the application. Please wait...")
-        core.close_application_uc.execute()
+        core.display_disc_information.stop()
+        print("\n\rClosing the application. Please wait...")
         core.api_listener.stop()
         core.keyboard_listener.stop()
+        core.close_application_uc.execute()
         logging.info("Application closed.")

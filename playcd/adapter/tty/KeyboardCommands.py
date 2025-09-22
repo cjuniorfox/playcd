@@ -17,4 +17,4 @@ class KeyboardCommands:
     
         print("Keyboard Commands:")
         print(" "," ".join(keys))
-        print("  ","   ".join(icons),"\n")
+        print("  ","   ".join(icons)+"\n")
