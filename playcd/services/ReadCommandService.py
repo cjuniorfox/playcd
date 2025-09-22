@@ -10,7 +10,7 @@ class ReadCommandService:
     def execute(self) -> CDPlayerEnum:
         self.logging.debug("Reading command from repository")
         command = self.command_repository.get()
-        if command != None:
+        if command == None:
             self.logging.debug("There's no command to be retrieved right now")
         else:
             self.logging.debug("Command retrieved: %s", command)

@@ -10,7 +10,7 @@ class PlayService:
         self.logging = logging
         self.track_service = track_service
 
-    def _next_track(command: CDPlayerEnum , repeat: RepeatEnum, track_int: int) -> int:
+    def _next_track(self,command: CDPlayerEnum , repeat: RepeatEnum, track_int: int) -> int:
         if command == CDPlayerEnum.PREV:
             return max(0, track_int - 1)
         elif repeat == RepeatEnum.ONE:
@@ -23,6 +23,7 @@ class PlayService:
         if track_int == length and repeat == RepeatEnum.ALL:
             self.logging.info("Repeating playlist from the beginning.")
             return 0
+        return track_int
 
 
     def play(self, playlist: List[Track], repeat: RepeatEnum, shuffle: bool):

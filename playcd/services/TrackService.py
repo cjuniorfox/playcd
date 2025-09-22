@@ -27,13 +27,13 @@ class TrackService:
         self.register_status_service = register_status_service
         self.read_disc_information_service = read_disc_information_service
 
-    def _display_info_from_cdplayer(self, cd_player: CDPlayer) -> tuple[int, CDPlayerEnum]:
+    def _display_info_from_cdplayer(self, cd_player: CDPlayer) -> CDPlayerEnum:
         if cd_player.is_paused():
-            return cd_player.get_lsn(), CDPlayerEnum.PAUSE
+            return CDPlayerEnum.PAUSE
         elif cd_player.is_stopped():
-            return 0, CDPlayerEnum.STOP
+            return CDPlayerEnum.STOP
         else:
-            return cd_player.get_lsn(), CDPlayerEnum.PLAY
+            return CDPlayerEnum.PLAY
         
     def play(self, playlist : List[Track], position: int) -> CDPlayerEnum | None:
         
@@ -51,10 +51,10 @@ class TrackService:
 
             command = self.read_command_service.execute()
             self.control_service.execute(command, cd_player)
-            print_lsn, print_command = self._display_info_from_cdplayer(cd_player)
+            print_command = self._display_info_from_cdplayer(cd_player)
 
             self.register_status_service.execute(
-                lsn = print_lsn, 
+                lsn = cd_player.get_lsn(),
                 command = command if command != None else print_command,
                 disc_information = disc_information
             )
