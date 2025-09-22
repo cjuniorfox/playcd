@@ -16,6 +16,6 @@ class DiscInformationRepository:
 
     def get(self) -> DiscInformation:
         self.logging.debug("Retrieving disc information %s", self.disc_information)
-        if self.display_information == None:
-            raise ValueNotFoundError("The DisplayInformation is was set yet","DisplayInformationRepository.display_information is None")
+        if self.disc_information == None:
+            raise ValueNotFoundError("The disc information was not set yet","DiscInformationRepository.disc_information is None")
         return self.disc_information
