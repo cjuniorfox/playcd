@@ -14,6 +14,9 @@ class BaseDisc:
     @property
     def time(self) -> "DisplayInformation.Time":
         return self._time
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__}(command={self.command}, time={self.time})"
 
 class DisplayInformation:
 
@@ -29,6 +32,9 @@ class DisplayInformation:
         @property
         def total(self) -> str:
             return self._total
+        
+        def __repr__(self):
+            return f"Time(current='{self.current}', total='{self.total}')"
 
     def __init__(self, command: CDPlayerEnum, time: "DisplayInformation.Time"):
         self._command = command
@@ -39,6 +45,9 @@ class DisplayInformation:
             super().__init__(command, time)
             self._tracks = tracks
 
+        def __repr__(self):
+            return f"Disc(command={self.command}, time={self.time}, tracks={self.tracks})"
+
         @property
         def tracks(self) -> int:
             return self._tracks
@@ -47,6 +56,9 @@ class DisplayInformation:
         def __init__(self, command: CDPlayerEnum, time: "DisplayInformation.Time", track: int):
             super().__init__(command, time)
             self._track = track
+
+        def __repr__(self):
+            return f"Track(command={self.command}, time={self.time}, track={self.track})"
 
         @property
         def track(self) -> int:
@@ -63,3 +75,6 @@ class DisplayInformation:
     @property
     def track(self) -> Optional["DisplayInformation.Track"]:
         return self._track
+    
+    def __repr__(self):
+        return f"DisplayInformation(disc={self.disc}, track={self.track})"
