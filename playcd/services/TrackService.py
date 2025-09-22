@@ -48,7 +48,7 @@ class TrackService:
             self.control_service.control_cdplayer(command, cd_player)
 
             print_lsn, print_command = self._display_info_from_cdplayer(cd_player)
-            self.display_information_service.put(print_lsn, command if command != None else print_command)
+            self.display_information_service.refresh_cdplayer_status(print_lsn, command if command != None else print_command)
 
             if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
                 self.logging.debug("TrackService: Received command to go to the %s track.", command)
