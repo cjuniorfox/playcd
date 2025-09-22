@@ -26,7 +26,6 @@ class DisplayInformationService:
 
     def refresh_cdplayer_status(self,lsn: int, command: CDPlayerEnum) -> None:
         self.cdplayer_status = {"lsn": lsn, "command": command}
-        self.cdplayer_status.put(self.cdplayer_status)
         
     def get_disc_information(self):
         return self.disc_information
