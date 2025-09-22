@@ -5,13 +5,11 @@ import logging
 import threading
 import time
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
-
-
-from playcd.adapter.repository.CommandRepository import CommandRepository
+from playcd.services.RegisterCommandService import RegisterCommandService
 
 class KeyboardListener:
-    def __init__(self, command_repository : CommandRepository):
-        self.command_repository = command_repository
+    def __init__(self, register_command_service : RegisterCommandService):
+        self.register_command_service = register_command_service
         self.is_running = False
         self.old_console_settings = None
         self.logging = logging.getLogger(__name__)
@@ -53,8 +51,7 @@ class KeyboardListener:
                 key = self._getch()
                 command = self._key_to_command(key)
                 if command:
-                    self.command_repository.clear()
-                    self.command_repository.put(command)
+                    self.register_command_service.execute(command)
                 time.sleep(0.2)
         except KeyboardInterrupt:
             self.stop()
