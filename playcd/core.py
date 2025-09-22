@@ -39,7 +39,7 @@ class Core:
         self.is_tty_valid_service = IsTtyValidService(logging)
         self.control_service = ControlService(logging)
         self.register_status_service = RegisterStatusService(self.display_information_repository)
-        self.read_status_service = ReadStatusService(self.disc_information_repository)
+        self.read_status_service = ReadStatusService(self.display_information_repository)
         self.track_service = TrackService(
             command_repository= self.command_repository,
             cd_driver_service= self.cd_driver_service,
