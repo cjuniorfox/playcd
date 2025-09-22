@@ -7,7 +7,7 @@ class ReadStatusService:
         self.logging = logging.getLogger(__name__)
         self.display_information_repository = display_information_repository
 
-    def execute(self):
+    def execute(self) -> DisplayInformation:
         logging.debug("Reading disc information from repository")
         display_information = self.display_information_repository.get()
         if display_information == None:
