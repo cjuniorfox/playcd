@@ -77,7 +77,7 @@ class TrackService:
             )
 
             if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
-                return_command = self._jump_track(command, self.cd_player, track)
+                return_command = self._jump_track(command, track)
                 if return_command:
                     return return_command
             elif command == CDPlayerEnum.QUIT:
