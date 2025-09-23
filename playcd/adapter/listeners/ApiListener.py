@@ -43,7 +43,7 @@ class ApiListener:
             try:
                 display_information: DisplayInformation = self.read_status_service.execute()
                 display_information_response : DisplayInformationResponse = DisplayInformationResponseMapper.map(display_information)
-                return { "status": "ok", "display": display_information_response }
+                return { "status": "ok", "display": display_information_response.to_dict() }
             except Exception as e:
                 response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
                 return {"status": "error", "detail":str(e)}            
