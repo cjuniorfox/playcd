@@ -1,1 +1,1 @@
-from .playcd import main
+from .cli import main_cli
