@@ -6,10 +6,16 @@ import threading
 import time
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
 from playcd.services.RegisterCommandService import RegisterCommandService
+from playcd.services.IsTtyValidService import IsTtyValidService
 
 class KeyboardListener:
-    def __init__(self, register_command_service : RegisterCommandService):
+    def __init__(
+            self,
+            register_command_service : RegisterCommandService,
+            is_tty_valid_service : IsTtyValidService
+        ):
         self.register_command_service = register_command_service
+        self.is_tty_valid_service = is_tty_valid_service
         self.is_running = False
         self.old_console_settings = None
         self.logging = logging.getLogger(__name__)
@@ -56,8 +62,14 @@ class KeyboardListener:
         except KeyboardInterrupt:
             self.stop()
     
-    def start(self):
+    def start(self):            
         """Start the keyboard listener"""
+        if not self.is_tty_valid_service.execute():
+            self.logging.info("TTY is not valid for keyboard input")
+            if self.is_running:
+                self.logging.info("Somehow keyboard listener is running. Stopping keyboard listener")
+                self.stop()
+            return
         if self.is_running:
             self.logging.warning("Keyboard listener is already running")
             return
