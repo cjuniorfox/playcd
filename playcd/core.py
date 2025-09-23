@@ -59,7 +59,6 @@ class Core:
             cd_driver_service= self.cd_driver_service,
             register_disc_information_service= self.register_disc_information_service,
             create_playlist_service= self.create_playlist_service,
-            is_tty_valid_service= self.is_tty_valid_service,
             play_service= self.play_service,
             track_service= self.track_service
         )
