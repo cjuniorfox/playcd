@@ -17,6 +17,12 @@ class DisplayInformationResponse:
     @property
     def track(self) -> Optional["DisplayInformationResponse.TrackResponse"]:
         return self._track
+    
+    def to_dict(self):
+        return {
+            "disc": self.disc.to_dict() if self.disc else None,
+            "track": self.track.to_dict() if self.track else None
+        }
 
     def __repr__(self):
         return f"{self.__class__.__name__}=(disc='{self.disc}', track='{self.track}')"
@@ -50,6 +56,14 @@ class DisplayInformationResponse:
         def time(self) -> Optional["DisplayInformationResponse.TimeResponse"]:
             return self._time
         
+        def to_dict(self):
+            return {
+                "tracks": self.tracks,
+                "icon": self.icon,
+                "command": self.command,
+                "time": self.time.to_dict() if self.time else None
+            }
+        
         def __repr__(self):
             return f"DisplayInformationResponse.DiscResponse(track='{self.tracks}', icon='{self.icon}', command='{self.command}', time='{self.time}')"
 
@@ -82,6 +96,14 @@ class DisplayInformationResponse:
         def time(self) -> Optional["DisplayInformationResponse.TimeResponse"]:
             return self._time
         
+        def to_dict(self):
+            return {
+                "track": self.track,
+                "icon": self.icon,
+                "command": self.command,
+                "time": self.time.to_dict() if self.time else None
+            }
+        
         def __repr__(self):
             return f"DisplayInformationResponse.TrackResponse(track='{self.track}', icon='{self.icon}', command='{self.command}', time='{self.time}')"
 
@@ -97,6 +119,12 @@ class DisplayInformationResponse:
         @property
         def total(self) -> str:
             return self._total
+        
+        def to_dict(self):
+            return {
+                "current": self.current,
+                "total": self.total
+            }
         
         def __repr__(self):
             return f"DisplayInformationResponse.TimeResponse(current='{self.current}', total='{self.total}')"
