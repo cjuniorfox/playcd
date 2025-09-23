@@ -31,7 +31,7 @@ class DisplayInformationResponse:
         def __init__(
                 self,
                 tracks: int,
-                icon: str,
+                icon: Optional["DisplayInformationResponse.IconResponse"],
                 command: str,
                 time: Optional["DisplayInformationResponse.TimeResponse"]
             ):
@@ -45,7 +45,7 @@ class DisplayInformationResponse:
             return self._tracks
 
         @property
-        def icon(self) -> str:
+        def icon(self) -> Optional["DisplayInformationResponse.IconResponse"]:
             return self._icon
 
         @property
@@ -59,7 +59,7 @@ class DisplayInformationResponse:
         def to_dict(self):
             return {
                 "tracks": self.tracks,
-                "icon": self.icon,
+                "icon": self.icon.to_dict() if self.icon else None,
                 "command": self.command,
                 "time": self.time.to_dict() if self.time else None
             }
@@ -71,7 +71,7 @@ class DisplayInformationResponse:
         def __init__(
                 self,
                 track: int,
-                icon: str,
+                icon: Optional["DisplayInformationResponse.IconResponse"],
                 command: str,
                 time: Optional["DisplayInformationResponse.TimeResponse"]
             ):
@@ -85,7 +85,7 @@ class DisplayInformationResponse:
             return self._track
         
         @property
-        def icon(self) -> str:
+        def icon(self) -> "DisplayInformationResponse.IconResponse":
             return self._icon
         
         @property
@@ -99,7 +99,7 @@ class DisplayInformationResponse:
         def to_dict(self):
             return {
                 "track": self.track,
-                "icon": self.icon,
+                "icon": self.icon.to_dict() if self.icon else None,
                 "command": self.command,
                 "time": self.time.to_dict() if self.time else None
             }
@@ -128,3 +128,25 @@ class DisplayInformationResponse:
         
         def __repr__(self):
             return f"DisplayInformationResponse.TimeResponse(current='{self.current}', total='{self.total}')"
+    
+    class IconResponse:
+        def __init__(self, unicode: str, text: str):
+            self._unicode = unicode
+            self._text = text
+
+        @property
+        def unicode(self) -> str:
+            return self._unicode
+
+        @property
+        def text(self) -> str:
+            return self._text
+        
+        def to_dict(self):
+            return {
+                "unicode": self.unicode,
+                "text": self.text
+            }
+        
+        def __repr__(self):
+            return f"DisplayInformationResponse.IconResponse(unicode='{self.unicode}', text='{self.text}')"
