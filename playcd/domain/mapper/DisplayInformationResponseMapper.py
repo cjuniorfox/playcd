@@ -10,12 +10,10 @@ class DisplayInformationResponseMapper:
 
         disc = None
         if display_info.disc:
-            icon = None
-            if display_info.disc.icon:
-                icon = DisplayInformationResponse.IconResponse(
-                    unicode=icon_to_unicode(display_info.disc.icon),
-                    text=display_info.disc.icon
-                )
+            icon = DisplayInformationResponse.IconResponse(
+                unicode=icon_to_unicode(display_info.disc.command.icon),
+                text=display_info.disc.command.icon
+            )
             disc = DisplayInformationResponse.DiscResponse(
                 tracks=display_info.disc.tracks,
                 icon=icon,
@@ -27,12 +25,10 @@ class DisplayInformationResponseMapper:
             )
         track = None
         if display_info.track:
-            icon = None
-            if display_info.track.icon:
-                icon = DisplayInformationResponse.IconResponse(
-                    unicode=icon_to_unicode(display_info.track.icon),
-                    text=display_info.track.icon
-                )
+            icon = DisplayInformationResponse.IconResponse(
+                unicode=icon_to_unicode(display_info.track.command.icon),
+                text=display_info.track.command.icon
+            )
             track = DisplayInformationResponse.TrackResponse(
                 track=display_info.track.track,
                 icon=icon,
