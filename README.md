@@ -58,13 +58,13 @@ environment.systemPackages = with pkgs; [
 ### Debian / Ubuntu
 
 ```bash
-sudo apt install libcdio-dev portaudio19-dev
+sudo apt install libcdio-dev portaudio19-dev swig python3-dev
 ```
 
 ### Fedora
 
 ```bash
-sudo dnf install libcdio-devel portaudio-devel
+sudo dnf install libcdio-devel portaudio-devel swig @development-tools python3-devel
 ```
 
 ### Windows
