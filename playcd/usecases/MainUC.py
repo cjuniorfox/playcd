@@ -33,5 +33,5 @@ class MainUC:
         self.logging.info("Prepared playback with %d tracks.", track_count)
         while track_count < len(playlist):
             command = self.track_service.play(playlist, track_count)
-            track_count = self.play_service.next_track (command, params.repeat, track_count)
+            track_count = self.play_service.next_track(command, params.repeat, track_count)
             track_count = self.play_service.repeat_all(params.repeat, track_count, len(playlist))
