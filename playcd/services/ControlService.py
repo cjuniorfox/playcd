@@ -1,10 +1,11 @@
 from playcd.libs.CDPlayer import CDPlayer
 from playcd.domain.CDPlayerEnum import CDPlayerEnum
+import logging
 
 class ControlService:
 
-    def __init__(self, logging):
-        self.logging = logging
+    def __init__(self):
+        self.logging = logging.getLogger(__name__)
 
     def execute(self, command: str, cd_player: CDPlayer):
         if command:

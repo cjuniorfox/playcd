@@ -3,8 +3,9 @@ import logging
 
 class CDDriverService:
 
-    def __init__(self,logging: logging):
-        self.logging = logging
+    def __init__(self):
+        self.logging = logging.getLogger(__name__)
+        self.cd = None
 
     def open_cd(self) -> cdio.Device:
         self.logging.info("Opening CD device...")

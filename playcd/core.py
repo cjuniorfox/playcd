@@ -9,7 +9,7 @@ from playcd.services.RegisterDiscInformationService import RegisterDiscInformati
 from playcd.services.ReadDiscInformationService import ReadDiscInformationService
 from playcd.services.CreatePlaylistService import CreatePlaylistService
 from playcd.services.IsTtyValidService import IsTtyValidService
-from playcd.services.PlayService import PlayService
+from playcd.services.JumpTrackService import JumpTrackService
 from playcd.services.TrackService import TrackService
 from playcd.services.ControlService import ControlService
 from playcd.adapter.repository.CommandRepository import CommandRepository
@@ -35,12 +35,12 @@ class Core:
         self.disc_information_repository = DiscInformationRepository()
         self.display_information_repository = DisplayInformationRepository()
         self.command_repository = CommandRepository()
-        self.cd_driver_service = CDDriverService(logging)
+        self.cd_driver_service = CDDriverService()
         self.register_disc_information_service = RegisterDiscInformationService(self.disc_information_repository)
         self.read_disc_information_service = ReadDiscInformationService(self.disc_information_repository)
-        self.create_playlist_service = CreatePlaylistService(logging)
-        self.is_tty_valid_service = IsTtyValidService(logging)
-        self.control_service = ControlService(logging)
+        self.create_playlist_service = CreatePlaylistService()
+        self.is_tty_valid_service = IsTtyValidService()
+        self.control_service = ControlService()
         self.register_status_service = RegisterStatusService(self.display_information_repository)
         self.read_status_service = ReadStatusService(self.display_information_repository)
         self.register_command_service = RegisterCommandService(self.command_repository)
@@ -53,20 +53,18 @@ class Core:
             register_status_service= self.register_status_service,
             read_disc_information_service=self.read_disc_information_service
         )
-        self.play_service = PlayService(logging, self.track_service)
+
+        self.play_service = JumpTrackService()
 
         self.main_uc = MainUC(
             cd_driver_service= self.cd_driver_service,
             register_disc_information_service= self.register_disc_information_service,
             create_playlist_service= self.create_playlist_service,
-            play_service= self.play_service,
+            jump_track_service= self.play_service,
             track_service= self.track_service
         )
 
-        self.close_application_uc = CloseApplicationUC(
-            logging= logging,
-            cd_driver_service= self.cd_driver_service,
-        )
+        self.close_application_uc = CloseApplicationUC(self.cd_driver_service)
 
         self.api_listener = ApiListener(self.register_command_service,self.read_status_service,"::",8001)
         self.keyboard_listener = KeyboardListener(self.register_command_service)

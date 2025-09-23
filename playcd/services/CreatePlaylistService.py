@@ -8,8 +8,8 @@ import random
 
 class CreatePlaylistService:
     
-    def __init__(self, logging: logging):
-        self.logging = logging
+    def __init__(self):
+        self.logging = logging.getLogger(__name__)
 
     def _filter_tracks(self, tracks: List[Track], params: InputParams) -> List[Track]:
         filtered_tracks = [t for t in tracks if int(t.get_number()) >= int(params.get_track_number()) and t.get_format() == "audio"]

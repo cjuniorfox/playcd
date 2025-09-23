@@ -6,10 +6,9 @@ class CloseApplicationUC:
 
     def __init__(
             self, 
-            logging: logging, 
             cd_driver_service: CDDriverService,
             ):
-        self.logging = logging
+        self.logging = logging.getLogger(__name__)
         self.cd_driver_service = cd_driver_service
 
     def execute(self):

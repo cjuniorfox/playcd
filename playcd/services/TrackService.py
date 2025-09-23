@@ -26,47 +26,58 @@ class TrackService:
         self.control_service = control_service
         self.register_status_service = register_status_service
         self.read_disc_information_service = read_disc_information_service
-
-    def _display_info_from_cdplayer(self, cd_player: CDPlayer) -> CDPlayerEnum:
-        if cd_player.is_paused():
+        self.cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
+        
+    def _get_command_from_cdplayer_status(self) -> CDPlayerEnum:
+        if self.cd_player.is_paused():
             return CDPlayerEnum.PAUSE
-        elif cd_player.is_stopped():
+        elif self.cd_player.is_stopped():
             return CDPlayerEnum.STOP
         else:
             return CDPlayerEnum.PLAY
         
-    def play(self, playlist : List[Track], position: int) -> CDPlayerEnum | None:
-        
-        track = playlist[position]
-
+    def _restart_track(self, command: CDPlayerEnum, track: Track) -> bool:
+        if command == CDPlayerEnum.PREV and self.cd_player.get_lsn() - track.get_start_lsn() > 150:
+            self.cd_player.jump(track.get_start_lsn())
+            return True
+        return False
+    
+    def _jump_track(self, command, track) -> CDPlayerEnum | None:
+        self.logging.debug("TrackService: Received command to go to the %s track.", command)
+        restarted = self._restart_track(command, track)
+        if not restarted:
+            self.logging.debug("Stopping current track to go to the %s track.", command)
+            self.cd_player.close()
+            return command
+    
+    def _start_cd_player(self, track: Track) -> None:
         self.logging.info("Starting playback of the track: %s", track.get_number())
         self.logging.info("Playing CD from %s with length of %s sectors.", track.get_start_lsn(), track.get_length())
-
-        cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
-        cd_player.start(track.get_start_lsn(), track.get_length())
+        self.cd_player.start(track.get_start_lsn(), track.get_length())
+        
+    def play(self, playlist : List[Track], track_count: int) -> CDPlayerEnum | None:
+        
+        track = playlist[track_count]
+        self._start_cd_player(track)
 
         disc_information = self.read_disc_information_service.execute()
 
-        while cd_player.is_playing():
+        while self.cd_player.is_playing():
 
             command = self.read_command_service.execute()
-            self.control_service.execute(command, cd_player)
-            print_command = self._display_info_from_cdplayer(cd_player)
+            self.control_service.execute(command, self.cd_player)
+            cdplayer_status = self._get_command_from_cdplayer_status()
 
             self.register_status_service.execute(
-                lsn = cd_player.get_lsn(),
-                command = command if command != None else print_command,
+                lsn = self.cd_player.get_lsn(),
+                command = command if command != None else cdplayer_status,
                 disc_information = disc_information
             )
 
             if command in [CDPlayerEnum.NEXT, CDPlayerEnum.PREV]:
-                self.logging.debug("TrackService: Received command to go to the %s track.", command)
-                if command == CDPlayerEnum.PREV and cd_player.get_lsn() - track.get_start_lsn() > 150:
-                    cd_player.jump(track.get_start_lsn())
-                else:
-                    self.logging.debug("Stopping current track to go to the %s track.", command)
-                    cd_player.close()
-                    return command
+                return_command = self._jump_track(command, self.cd_player, track)
+                if return_command:
+                    return return_command
             elif command == CDPlayerEnum.QUIT:
                 self.logging.info("Quitting playback as per user request.")
                 raise KeyboardInterrupt

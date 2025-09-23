@@ -1,8 +1,8 @@
 import logging
 
 class IsTtyValidService:
-    def __init__(self, logging: logging):
-        self.logging = logging
+    def __init__(self):
+        self.logging = logging.getLogger(__name__)
 
     def execute(self) -> bool:
         import os
