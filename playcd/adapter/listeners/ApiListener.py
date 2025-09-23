@@ -7,6 +7,7 @@ from playcd.services.ReadStatusService import ReadStatusService
 from playcd.domain.DisplayInformation import DisplayInformation
 from playcd.domain.adapter.DisplayInformationResponse import DisplayInformationResponse
 from playcd.domain.mapper.DisplayInformationResponseMapper import DisplayInformationResponseMapper
+from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class ApiListener:
     def __init__(
@@ -30,7 +31,7 @@ class ApiListener:
         def send(command:str, response: Response) -> dict[str,str]:
             """Send command to the CD Player"""
             try:
-                self.register_command_service.execute(command)
+                self.register_command_service.execute(CDPlayerEnum.from_command(command))
                 return { "status" : "queued", "command": command }
             except ValueError:
                 response.status_code = status.HTTP_400_BAD_REQUEST
