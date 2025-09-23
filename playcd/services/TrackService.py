@@ -26,7 +26,7 @@ class TrackService:
         self.control_service = control_service
         self.register_status_service = register_status_service
         self.read_disc_information_service = read_disc_information_service
-        self.cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
+        self.cd_player = None
         
     def _get_command_from_cdplayer_status(self) -> CDPlayerEnum:
         if self.cd_player.is_paused():
@@ -51,6 +51,8 @@ class TrackService:
             return command
     
     def _start_cd_player(self, track: Track) -> None:
+        self.cd_driver_service.open_cd()
+        self.cd_player = CDPlayer(self.cd_driver_service.get_cd(), self.logging)
         self.logging.info("Starting playback of the track: %s", track.get_number())
         self.logging.info("Playing CD from %s with length of %s sectors.", track.get_start_lsn(), track.get_length())
         self.cd_player.start(track.get_start_lsn(), track.get_length())
@@ -82,5 +84,6 @@ class TrackService:
                 self.logging.info("Quitting playback as per user request.")
                 raise KeyboardInterrupt
             sleep(0.5)
-
+        
+        self.cd_player.close()
         self.logging.info("Playback finished.")
