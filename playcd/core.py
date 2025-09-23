@@ -68,7 +68,7 @@ class Core:
             cd_driver_service= self.cd_driver_service,
         )
 
-        self.api_listener = ApiListener(self.register_command_service,"::",8001)
+        self.api_listener = ApiListener(self.register_command_service,self.read_status_service,"::",8001)
         self.keyboard_listener = KeyboardListener(self.register_command_service)
         self.keyboard_commands = KeyboardCommands(self.is_tty_valid_service)
         self.display_disc_information = DisplayDiscInformationTty(self.read_status_service, self.is_tty_valid_service)
