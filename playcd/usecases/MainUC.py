@@ -29,7 +29,7 @@ class MainUC:
         self.cd = self.cd_driver_service.open_cd()
         disc_information = self.register_disc_information_service.register(self.cd)
         playlist = self.create_playlist_service.create(disc_information,params)
-        track_count = len(playlist)
+        track_count = 0
         self.logging.info("Prepared playback with %d tracks.", track_count)
         while track_count < len(playlist):
             command = self.track_service.play(playlist, track_count)
