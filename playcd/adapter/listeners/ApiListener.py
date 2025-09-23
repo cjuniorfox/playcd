@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response, status, HTTPException, JSONResponse
+from fastapi import FastAPI, Response, status
 import uvicorn
 import logging
 import threading
@@ -7,7 +7,6 @@ from playcd.services.ReadStatusService import ReadStatusService
 from playcd.domain.DisplayInformation import DisplayInformation
 from playcd.domain.adapter.DisplayInformationResponse import DisplayInformationResponse
 from playcd.domain.mapper.DisplayInformationResponseMapper import DisplayInformationResponseMapper
-from playcd.domain.CDPlayerEnum import CDPlayerEnum
 
 class ApiListener:
     def __init__(
@@ -29,15 +28,13 @@ class ApiListener:
     def _routes(self) -> None:
         @self.app.post("/command/{command}")
         def send(command:str, response: Response) -> dict[str,str]:
+            """Send command to the CD Player"""
             try:
-                self.register_command_service.clear()
-                self.register_command_service.put(CDPlayerEnum.from_command(command))
+                self.register_command_service.execute(command)
                 return { "status" : "queued", "command": command }
             except ValueError:
-                return JSONResponse(
-                    status_code = status.HTTP_400_BAD_REQUEST,
-                    content = {"status": "invalid command", "command": command}
-                )
+                response.status_code = status.HTTP_400_BAD_REQUEST
+                return {"status": "invalid", "command": command}
             
         @self.app.get("/display")
         def display(response: Response) -> dict:
@@ -48,8 +45,8 @@ class ApiListener:
                 display_information_response : DisplayInformationResponse = DisplayInformationResponseMapper.map(display_information)
                 return { "status": "ok", "display": display_information_response }
             except Exception as e:
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-            
+                response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+                return {"status": "error", "detail":str(e)}            
         
     def _http_server(self) -> None:
         logger = logging.getLogger("")
