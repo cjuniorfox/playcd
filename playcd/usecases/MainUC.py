@@ -22,7 +22,7 @@ class MainUC:
         self.cd_driver_service = cd_driver_service
         self.register_disc_information_service = register_disc_information_service
         self.create_playlist_service = create_playlist_service
-        self.play_service = play_service,
+        self.play_service = play_service
         self.track_service = track_service
 
     def execute(self,params : InputParams):
