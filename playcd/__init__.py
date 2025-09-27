@@ -1,1 +1,1 @@
-from .core import main
+from .cli import main_cli
