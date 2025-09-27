@@ -1,1 +1,1 @@
-from .playcd import main
+from .core import main
